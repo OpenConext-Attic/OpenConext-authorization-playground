@@ -1,5 +1,6 @@
 package authzplay.web;
 
+import authzplay.ClientSettings;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.PartialRequestBuilder;
@@ -8,33 +9,20 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.core.header.OutBoundHeaders;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import authzplay.ClientSettings;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,19 +33,21 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 
 @Controller
-@PropertySource("classpath:playground.properties")
 @Configuration
 public class ClientController {
 
-  @Autowired
-  protected MessageSource messageSource;
-
-  @Autowired
-  private Environment env;
-
-  protected void notice(RedirectAttributes redirectAttributes, String key, Object... args) {
-    redirectAttributes.addFlashAttribute("flash.notice", messageSource.getMessage(key, args, Locale.ENGLISH));
-  }
+  @Value("${oauth.redirect_uri}")
+  private String redirectUri;
+  @Value("${oauth.token_uri}")
+  private String tokenUri;
+  @Value("${oauth.client_id}")
+  private String clientId;
+  @Value("${oauth.client_secret}")
+  private String clientSecret;
+  @Value("${oauth.authorize_url}")
+  private String authorizeUrl;
+  @Value("${oauth.resource_server_api_url}")
+  private String resourceServerApiUrl;
 
   private static final String AUTHORIZATION = "Authorization";
   private static final String SETTINGS = "settings";
@@ -67,9 +57,6 @@ public class ClientController {
 
   private Client client;
 
-  /**
-   * @param env
-   */
   public ClientController() {
     ClientConfig config = new DefaultClientConfig();
     config.getClasses().add(JacksonJsonProvider.class);
@@ -112,7 +99,7 @@ public class ClientController {
     MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
     formData.add("grant_type", "authorization_code");
     formData.add("code", code);
-    formData.add("redirect_uri", env.getProperty("redirect_uri"));
+    formData.add("redirect_uri", redirectUri);
 
     String auth = "Basic ".concat(new String(Base64.encodeBase64(settings.getOauthKey().concat(":")
       .concat(settings.getOauthSecret()).getBytes())));
@@ -179,12 +166,6 @@ public class ClientController {
    */
   protected ClientSettings createDefaultSettings(boolean implicitGrant) {
     String responseType = implicitGrant ? "token" : "code";
-    String redirectUri = env.getProperty("redirect_uri");
-    String tokenUri = env.getProperty("token_uri");
-    String clientId = env.getProperty("client_id");
-    String clientSecret = env.getProperty("client_secret");
-    String authorizeUrl = env.getProperty("authorize_url");
-    String resourceServerApiUrl = env.getProperty("resource_server_api_url");
     ClientSettings settings = new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl);
     settings.setGrantType("authCode");
     settings.setOauthScope("read");
