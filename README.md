@@ -1,5 +1,5 @@
 # OpenConext-authorization-playground
-OAuth2 client for the Oauth2 server for the OpenConext platform.
+OAuth2 demo client for the Oauth2 server for the OpenConext platform.
 
 ## Development
 
