@@ -9,7 +9,7 @@
 <div layout:fragment="content">
 
   <p>This OAuth2 client app first obtains an Access Token from the Authorization Server
-    and then uses the Voot Resource Server to access protected resources.</p>
+    with which the VOOT Resource Server can be accessed to query protected resources.</p>
 
   <div class="row">
     <form class="col-md-8" name="test-oauth-server" action="/test" th:object="${settings}" method="post">
@@ -56,7 +56,6 @@
                 <label for="accessTokenEndPoint">AccessToken URL</label>
                 <input id="accessTokenEndPoint" type="text" class="input-xlarge"
                        th:field="*{accessTokenEndPoint}"/>
-
                 <p class="help-block">The access token endpoint of the Authorization server</p>
 
                 <label for="authorizationURL">Authorization URL</label>
@@ -86,8 +85,7 @@
             <div class="panel-body">
               <div class="fields">
                 <label for="authorizationURLComplete">Authorization URL</label>
-                <input id="authorizationURLComplete" type="text" th:field="*{authorizationURLComplete}"
-                       class="large"/>
+                <textarea rows="5" class="input-xlarge" id="authorizationURLComplete" cols="50" th:field="*{authorizationURLComplete}"/>
 
                 <p class="help-block">The URL to redirect to for user authentication
                 </p>
