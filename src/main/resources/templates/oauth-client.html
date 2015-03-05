@@ -31,32 +31,39 @@
 
                 <p class="help-block">The client must have obtained the key out-of-band during the registration
                   process</p>
-                <label for="oauthSecret">OAuth secret</label>
-                <input id="oauthSecret" type="text" class="input-xlarge" th:field="*{oauthSecret}"/>
+                <section data-show-implicit="false">
+                  <label for="oauthSecret">OAuth secret</label>
+                  <input id="oauthSecret" type="text" class="input-xlarge" th:field="*{oauthSecret}"/>
 
-                <p class="help-block">The secret (normally an UUID) is also out-of-band obtained by the client
-                  during the registration process</p>
+                  <p class="help-block">The secret (normally an UUID) is also out-of-band obtained by the client
+                    during the registration process</p>
+                </section>
 
                 <label for="oauthScope">OAuth scope</label>
-                <input id="oauthScope" type="text" class="input-xlarge" th:field="*{oauthScope}"/>
+                <input id="oauthScope" type="text" class="input-xlarge" th:field="*{oauthScope}" disabled="true"/>
 
                 <p class="help-block">The scope for which to grant access</p>
 
                 <label>OAuth grant type</label>
                 <input id="authCode" th:field="*{grantType}" type="radio" value="authCode"/><span class="mar">Authorization code</span>
                 <input id="implicitGrant" th:field="*{grantType}" type="radio" value="implicit"/><span>Implicit</span>
+
                 <p class="help-block">A credential representing the resource
                   owner's authorization (to access its protected resources) used by the
                   client to obtain an access token</p>
 
-                <label for="redirectUri">Use no redirect URI</label>
-                <input id="redirectUri" th:field="*{redirectUri}" type="checkbox"/>
+                <label for="noRedirectUri">Use no redirect URI</label>
+                <input id="noRedirectUri" th:field="*{noRedirectUri}" type="checkbox"/>
+
                 <p class="help-block">Use the redirect URI pre-configured for this client.</p>
 
-                <label for="accessTokenEndPoint">AccessToken URL</label>
-                <input id="accessTokenEndPoint" type="text" class="input-xlarge"
-                       th:field="*{accessTokenEndPoint}"/>
-                <p class="help-block">The access token endpoint of the Authorization server</p>
+                <section data-show-implicit="false">
+                  <label for="accessTokenEndPoint">AccessToken URL</label>
+                  <input id="accessTokenEndPoint" type="text" class="input-xlarge"
+                         th:field="*{accessTokenEndPoint}"/>
+
+                  <p class="help-block">The access token endpoint of the Authorization server</p>
+                </section>
 
                 <label for="authorizationURL">Authorization URL</label>
                 <input id="authorizationURL" type="text" class="input-xlarge" th:field="*{authorizationURL}"/>
@@ -85,7 +92,8 @@
             <div class="panel-body">
               <div class="fields">
                 <label for="authorizationURLComplete">Authorization URL</label>
-                <textarea rows="5" class="input-xlarge" id="authorizationURLComplete" cols="50" th:field="*{authorizationURLComplete}"/>
+                <textarea rows="5" class="input-xlarge" id="authorizationURLComplete" cols="50"
+                          th:field="*{authorizationURLComplete}"/>
 
                 <p class="help-block">The URL to redirect to for user authentication
                 </p>
@@ -119,7 +127,7 @@
                 <label for="requestURL">API Request </label>
                 <input id="requestURL" type="text" th:field="*{requestURL}" class="input-xlarge"/>
 
-                <p class="help-block">An endpoint on the VOOT Resource server</p>
+                <p class="help-block">An endpoint on the <a href="http://openvoot.org/protocol/" target="_blank">VOOT</a> Resource server</p>
 
                 <div class="buttons">
                   <button name="step3" class="c-button">Fetch</button>
@@ -133,8 +141,9 @@
         </div>
       </div>
       <input id="step" type="hidden" th:value="${settings.step}" name="step"/>
+      <input id="parseAnchorForAccessToken" type="text" th:value="${parseAnchorForAccessToken}"/>
     </form>
-    <div class="col-md-4" >
+    <div class="col-md-4">
       <div id="request">
         <div class="alert alert-info alert-http">HTTP Request</div>
         <pre id="requestInfo" class="prettyprint pre-scrollable pre-json" th:text="${requestInfo}">requestInfo </pre>

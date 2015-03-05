@@ -11,9 +11,7 @@ import com.sun.jersey.core.header.OutBoundHeaders;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -66,7 +64,7 @@ public class ClientController {
   @RequestMapping(value = {"/"}, method = RequestMethod.GET)
   public String start(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
     throws IOException {
-    modelMap.addAttribute(SETTINGS, createDefaultSettings(false));
+    modelMap.addAttribute(SETTINGS, createDefaultSettings());
     return "oauth-client";
   }
 
@@ -80,6 +78,15 @@ public class ClientController {
   public String step1(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     settings.setStep("step2");
+    String responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
+    String authorizationUrlComplete = String.format(
+      settings.getAuthorizationURL()
+        .concat("?response_type=%s&client_id=%s&scope=read&state=example"), responseType, settings
+        .getOauthKey());
+    if (!settings.isNoRedirectUri()) {
+      authorizationUrlComplete = authorizationUrlComplete + "&redirect_uri=" + redirectUri;
+    }
+    settings.setAuthorizationURLComplete(authorizationUrlComplete);
     modelMap.addAttribute(SETTINGS, settings);
     return "oauth-client";
   }
@@ -87,37 +94,44 @@ public class ClientController {
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step2")
   public void step2(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.sendRedirect(settings.getAuthorizationURLComplete());
+    request.getSession().setAttribute(SETTINGS, settings);
+    String authorizationURLComplete = settings.getAuthorizationURLComplete();
+    response.sendRedirect(authorizationURLComplete);
   }
 
   @RequestMapping(value = "redirect", method = RequestMethod.GET)
   public String redirect(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
-    throws JsonParseException, JsonMappingException, IOException {
-    String code = request.getParameter("code");
-    ClientSettings settings = createDefaultSettings(false);
+    throws IOException {
+    ClientSettings settings = (ClientSettings) request.getSession().getAttribute(SETTINGS);
+    if (settings.getGrantType().equals("implicit")) {
+      modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
+    } else {
+      String code = request.getParameter("code");
+      MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+      formData.add("grant_type", "authorization_code");
+      formData.add("code", code);
+      formData.add("redirect_uri", redirectUri);
 
-    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-    formData.add("grant_type", "authorization_code");
-    formData.add("code", code);
-    formData.add("redirect_uri", redirectUri);
-
-    String auth = "Basic ".concat(new String(Base64.encodeBase64(settings.getOauthKey().concat(":")
-      .concat(settings.getOauthSecret()).getBytes())));
-    Builder builder = client.resource(settings.getAccessTokenEndPoint()).header(AUTHORIZATION, auth)
-      .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-    OutBoundHeaders headers = getHeadersCopy(builder);
-    ClientResponse clientResponse = builder.post(ClientResponse.class, formData);
-    String json = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
-    HashMap map = mapper.readValue(json, HashMap.class);
-    settings.setStep("step3");
-    settings.setAccessToken((String) map.get("access_token"));
+      String auth = "Basic ".concat(new String(Base64.encodeBase64(settings.getOauthKey().concat(":")
+        .concat(settings.getOauthSecret()).getBytes())));
+      Builder builder = client.resource(settings.getAccessTokenEndPoint()).header(AUTHORIZATION, auth)
+        .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
+      OutBoundHeaders headers = getHeadersCopy(builder);
+      ClientResponse clientResponse = builder.post(ClientResponse.class, formData);
+      addResponseInfo(modelMap, clientResponse);
+      String json = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
+      modelMap.put("rawResponseInfo", json);
+      modelMap.put(
+        "requestInfo",
+        "Method: POST".concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
+          .concat("Headers: ").concat(headers.toString()).concat(BR).concat("Body: ").concat(formData.toString()));
+      if (clientResponse.getStatus() == 200) {
+        HashMap map = mapper.readValue(json, HashMap.class);
+        settings.setAccessToken((String) map.get("access_token"));
+      }
+    }
     modelMap.put(SETTINGS, settings);
-    modelMap.put(
-      "requestInfo",
-      "Method: POST".concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
-        .concat("Headers: ").concat(headers.toString()).concat(BR).concat("Body: ").concat(formData.toString()));
-    addResponseInfo(modelMap, clientResponse);
-    modelMap.put("rawResponseInfo", json);
+    settings.setStep("step3");
     return "oauth-client";
   }
 
@@ -161,18 +175,10 @@ public class ClientController {
     }
   }
 
-  /**
-   * See /apis-authorization-server/src/main/resources/db/migration/hsqldb/V1__auth-server-admin.sql
-   */
-  protected ClientSettings createDefaultSettings(boolean implicitGrant) {
-    String responseType = implicitGrant ? "token" : "code";
+  protected ClientSettings createDefaultSettings() {
     ClientSettings settings = new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl);
     settings.setGrantType("authCode");
     settings.setOauthScope("read");
-    settings.setAuthorizationURLComplete(String.format(
-      settings.getAuthorizationURL()
-        .concat("?response_type=%s&client_id=%s&redirect_uri=%s&scope=read&state=example"), responseType, settings
-        .getOauthKey(), redirectUri));
     return settings;
 
   }

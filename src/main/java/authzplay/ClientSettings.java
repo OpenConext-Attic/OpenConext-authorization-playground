@@ -29,12 +29,11 @@ public class ClientSettings {
   private String oauthSecret;
   private String oauthScope;
   private String grantType;
-  private boolean redirectUri;
+  private boolean noRedirectUri;
   private String authorizationURL;
   private String authorizationURLComplete;
   private String step ;
   private String requestURL;
-  private boolean implicitGrant;
   private String accessToken;
 
   public ClientSettings() {
@@ -144,20 +143,6 @@ public class ClientSettings {
   }
 
   /**
-   * @return the implicitGrant
-   */
-  public boolean isImplicitGrant() {
-    return implicitGrant;
-  }
-
-  /**
-   * @param implicitGrant the implicitGrant to set
-   */
-  public void setImplicitGrant(boolean implicitGrant) {
-    this.implicitGrant = implicitGrant;
-  }
-
-  /**
    * @return the authorizationURLComplete
    */
   public String getAuthorizationURLComplete() {
@@ -201,11 +186,11 @@ public class ClientSettings {
     this.grantType = grantType;
   }
 
-  public boolean getRedirectUri() {
-    return redirectUri;
+  public boolean isNoRedirectUri() {
+    return noRedirectUri;
   }
 
-  public void setRedirectUri(boolean redirectUri) {
-    this.redirectUri = redirectUri;
+  public void setNoRedirectUri(boolean noRedirectUri) {
+    this.noRedirectUri = noRedirectUri;
   }
 }
