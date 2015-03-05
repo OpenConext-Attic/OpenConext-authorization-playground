@@ -63,20 +63,20 @@ public class ClientController {
     this.client = Client.create(config);
   }
 
-  @RequestMapping(value = {"test"}, method = RequestMethod.GET)
+  @RequestMapping(value = {"/"}, method = RequestMethod.GET)
   public String start(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
     throws IOException {
     modelMap.addAttribute(SETTINGS, createDefaultSettings(false));
     return "oauth-client";
   }
 
-  @RequestMapping(value = "/test", method = RequestMethod.POST, params = "reset")
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "reset")
   public String reset(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
     return start(modelMap, request, response);
   }
 
 
-  @RequestMapping(value = "test", method = RequestMethod.POST, params = "step1")
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "step1")
   public String step1(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     settings.setStep("step2");
@@ -84,7 +84,7 @@ public class ClientController {
     return "oauth-client";
   }
 
-  @RequestMapping(value = "test", method = RequestMethod.POST, params = "step2")
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "step2")
   public void step2(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.sendRedirect(settings.getAuthorizationURLComplete());
@@ -121,7 +121,7 @@ public class ClientController {
     return "oauth-client";
   }
 
-  @RequestMapping(value = "test", method = RequestMethod.POST, params = "step3")
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "step3")
   public String step3(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     Builder builder = client.resource(settings.getRequestURL())
