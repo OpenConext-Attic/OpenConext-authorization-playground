@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 @Controller
@@ -46,6 +47,9 @@ public class ClientController {
   private String authorizeUrl;
   @Value("${oauth.resource_server_api_url}")
   private String resourceServerApiUrl;
+
+  @Value("${oauth.scopes}")
+  private String scopes;
 
   private static final String AUTHORIZATION = "Authorization";
   private static final String SETTINGS = "settings";
@@ -79,10 +83,10 @@ public class ClientController {
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     settings.setStep("step2");
     String responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
+    String encodedScopes = URLEncoder.encode(settings.getOauthScopes(), "UTF-8");
     String authorizationUrlComplete = String.format(
       settings.getAuthorizationURL()
-        .concat("?response_type=%s&client_id=%s&scope=read&state=example"), responseType, settings
-        .getOauthKey());
+        .concat("?response_type=%s&client_id=%s&scope=%s&state=example"), responseType, settings.getOauthKey(), encodedScopes);
     if (!settings.isNoRedirectUri()) {
       authorizationUrlComplete = authorizationUrlComplete + "&redirect_uri=" + redirectUri;
     }
@@ -176,9 +180,8 @@ public class ClientController {
   }
 
   protected ClientSettings createDefaultSettings() {
-    ClientSettings settings = new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl);
+    ClientSettings settings = new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl, scopes);
     settings.setGrantType("authCode");
-    settings.setOauthScope("read");
     return settings;
 
   }

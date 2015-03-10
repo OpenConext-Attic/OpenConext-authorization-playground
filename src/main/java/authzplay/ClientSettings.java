@@ -27,7 +27,7 @@ public class ClientSettings {
   private String accessTokenEndPoint ;
   private String oauthKey;
   private String oauthSecret;
-  private String oauthScope;
+  private String oauthScopes; // space-separated
   private String grantType;
   private boolean noRedirectUri;
   private String authorizationURL;
@@ -41,7 +41,7 @@ public class ClientSettings {
   }
 
   public ClientSettings(String accessTokenEndPoint, String oauthKey, String oauthSecret, String authorizationURL,
-                        String step, String requestURL) {
+                        String step, String requestURL, String scopes) {
     super();
     this.accessTokenEndPoint = accessTokenEndPoint;
     this.oauthKey = oauthKey;
@@ -49,6 +49,7 @@ public class ClientSettings {
     this.authorizationURL = authorizationURL;
     this.step = step;
     this.requestURL = requestURL;
+    this.oauthScopes = scopes;
   }
 
 
@@ -170,12 +171,12 @@ public class ClientSettings {
     this.accessToken = accessToken;
   }
 
-  public String getOauthScope() {
-    return oauthScope;
+  public String getOauthScopes() {
+    return oauthScopes;
   }
 
-  public void setOauthScope(String oauthScope) {
-    this.oauthScope = oauthScope;
+  public void setOauthScopes(String oauthScopes) {
+    this.oauthScopes = oauthScopes;
   }
 
   public String getGrantType() {

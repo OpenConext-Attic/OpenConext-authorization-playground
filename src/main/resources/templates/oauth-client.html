@@ -35,12 +35,12 @@
                   <label for="oauthSecret">OAuth secret</label>
                   <input id="oauthSecret" type="text" class="input-xlarge" th:field="*{oauthSecret}"/>
 
-                  <p class="help-block">The secret (normally an UUID) is also out-of-band obtained by the client
+                  <p class="help-block">The secret (normally a UUID) is also obtained out-of-band by the client
                     during the registration process</p>
                 </section>
 
-                <label for="oauthScope">OAuth scope</label>
-                <input id="oauthScope" type="text" class="input-xlarge" th:field="*{oauthScope}" disabled="true"/>
+                <label for="oauthScopes">OAuth scopes (space-separated, case-sensitive)</label>
+                <input id="oauthScopes" type="text" class="input-xlarge" th:field="*{oauthScopes}"/>
 
                 <p class="help-block">The scope for which to grant access</p>
 
