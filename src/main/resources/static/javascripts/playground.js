@@ -7,7 +7,8 @@ $(function () {
 
   // changing the grant type means toggling some fields:
   $("input[name='grantType']").click(function () {
-    $('[data-show-implicit]').toggle(this.id === 'authCode');
+    $('[data-show-client-credentials]').toggle(this.id !== 'clientCredentials');
+    $('[data-show-implicit]').toggle(this.id !== 'implicitGrant');
   });
 
 

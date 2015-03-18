@@ -47,15 +47,18 @@
                 <label>OAuth grant type</label>
                 <input id="authCode" th:field="*{grantType}" type="radio" value="authCode"/><span class="mar">Authorization code</span>
                 <input id="implicitGrant" th:field="*{grantType}" type="radio" value="implicit"/><span>Implicit</span>
+                <input id="clientCredentials" th:field="*{grantType}" type="radio" value="clientCredentials"/><span
+                class="mar">Client Credentials</span>
 
                 <p class="help-block">A credential representing the resource
                   owner's authorization (to access its protected resources) used by the
                   client to obtain an access token</p>
+                <section data-show-client-credentials="false">
+                  <label for="noRedirectUri">Use no redirect URI</label>
+                  <input id="noRedirectUri" th:field="*{noRedirectUri}" type="checkbox"/>
 
-                <label for="noRedirectUri">Use no redirect URI</label>
-                <input id="noRedirectUri" th:field="*{noRedirectUri}" type="checkbox"/>
-
-                <p class="help-block">Use the redirect URI pre-configured for this client.</p>
+                  <p class="help-block">Use the redirect URI pre-configured for this client.</p>
+                </section>
 
                 <section data-show-implicit="false">
                   <label for="accessTokenEndPoint">AccessToken URL</label>
@@ -64,12 +67,12 @@
 
                   <p class="help-block">The access token endpoint of the Authorization server</p>
                 </section>
+                <section data-show-client-credentials="false">
+                  <label for="authorizationURL">Authorization URL</label>
+                  <input id="authorizationURL" type="text" class="input-xlarge" th:field="*{authorizationURL}"/>
 
-                <label for="authorizationURL">Authorization URL</label>
-                <input id="authorizationURL" type="text" class="input-xlarge" th:field="*{authorizationURL}"/>
-
-                <p class="help-block">The authorization token endpoint of the Authorization server</p>
-
+                  <p class="help-block">The authorization endpoint of the Authorization server</p>
+                </section>
                 <div class="buttons">
                   <button name="step1" class="c-button">Next</button>
                   <button name="reset" class="c-button">Reset</button>
@@ -127,7 +130,8 @@
                 <label for="requestURL">API Request </label>
                 <input id="requestURL" type="text" th:field="*{requestURL}" class="input-xlarge"/>
 
-                <p class="help-block">An endpoint on the <a href="http://openvoot.org/protocol/" target="_blank">VOOT</a> Resource server</p>
+                <p class="help-block">An endpoint on the <a href="http://openvoot.org/protocol/"
+                                                            target="_blank">VOOT</a> Resource server</p>
 
                 <div class="buttons">
                   <button name="step3" class="c-button">Fetch</button>

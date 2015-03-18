@@ -81,16 +81,22 @@ public class ClientController {
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step1")
   public String step1(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
-    settings.setStep("step2");
-    String responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
-    String encodedScopes = URLEncoder.encode(settings.getOauthScopes(), "UTF-8");
-    String authorizationUrlComplete = String.format(
-      settings.getAuthorizationURL()
-        .concat("?response_type=%s&client_id=%s&scope=%s&state=example"), responseType, settings.getOauthKey(), encodedScopes);
-    if (!settings.isNoRedirectUri()) {
-      authorizationUrlComplete = authorizationUrlComplete + "&redirect_uri=" + redirectUri;
+    if (settings.getGrantType().equals("clientCredentials")) {
+      settings.setStep("step3");
+      request.getSession().setAttribute(SETTINGS, settings);
+      redirect(modelMap, request, response);
+    } else {
+      settings.setStep("step2");
+      String responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
+      String encodedScopes = URLEncoder.encode(settings.getOauthScopes(), "UTF-8");
+      String authorizationUrlComplete = String.format(
+        settings.getAuthorizationURL()
+          .concat("?response_type=%s&client_id=%s&scope=%s&state=example"), responseType, settings.getOauthKey(), encodedScopes);
+      if (!settings.isNoRedirectUri()) {
+        authorizationUrlComplete = authorizationUrlComplete + "&redirect_uri=" + redirectUri;
+      }
+      settings.setAuthorizationURLComplete(authorizationUrlComplete);
     }
-    settings.setAuthorizationURLComplete(authorizationUrlComplete);
     modelMap.addAttribute(SETTINGS, settings);
     return "oauth-client";
   }
@@ -110,10 +116,15 @@ public class ClientController {
     if (settings.getGrantType().equals("implicit")) {
       modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
     } else {
-      String code = request.getParameter("code");
+
       MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-      formData.add("grant_type", "authorization_code");
-      formData.add("code", code);
+      boolean isClientCredentials = settings.getGrantType().equals("clientCredentials");
+      formData.add("grant_type", isClientCredentials ? "client_credentials" : "authorization_code");
+      if (!isClientCredentials) {
+        String code = request.getParameter("code");
+        formData.add("code", code);
+      }
+
       formData.add("redirect_uri", redirectUri);
 
       String auth = "Basic ".concat(new String(Base64.encodeBase64(settings.getOauthKey().concat(":")
