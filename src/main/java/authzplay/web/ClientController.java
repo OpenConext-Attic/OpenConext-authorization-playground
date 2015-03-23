@@ -155,7 +155,8 @@ public class ClientController {
   ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     Builder builder = client.resource(settings.getRequestURL())
       .header(AUTHORIZATION, "bearer ".concat(settings.getAccessToken()))
-      .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
+      .type(MediaType.APPLICATION_JSON_TYPE)
+      .accept(MediaType.APPLICATION_JSON_TYPE);
     OutBoundHeaders headers = getHeadersCopy(builder);
     ClientResponse clientResponse = builder.get(ClientResponse.class);
     String json = IOUtils.toString(clientResponse.getEntityInputStream());
