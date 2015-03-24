@@ -158,6 +158,7 @@ public class ClientController {
       .type(MediaType.APPLICATION_JSON_TYPE)
       .accept(MediaType.APPLICATION_JSON_TYPE);
     OutBoundHeaders headers = getHeadersCopy(builder);
+    long start = System.currentTimeMillis();
     ClientResponse clientResponse = builder.get(ClientResponse.class);
     String json = IOUtils.toString(clientResponse.getEntityInputStream());
     settings.setStep("step3");
@@ -165,6 +166,7 @@ public class ClientController {
     modelMap.put("requestInfo", "Method: GET".concat(BR).concat("URL: ").concat(settings.getRequestURL()).concat(BR)
       .concat("Headers: ").concat(headers.toString()));
     addResponseInfo(modelMap, clientResponse);
+    modelMap.put("responseTime", String.format("Took %s ms", System.currentTimeMillis() - start));
     modelMap.put("rawResponseInfo", json);
     return "oauth-client";
   }

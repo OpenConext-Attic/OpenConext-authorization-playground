@@ -159,6 +159,7 @@
       </div>
       <div id="raw-response">
         <div class="alert alert-info alert-http">HTTP Response Body</div>
+          <p th:text="${responseTime}"></p>
           <pre id="rawResponseInfo" class="prettyprint pre-scrollable pre-json"
                th:text="${rawResponseInfo}">responseInfo</pre>
       </div>
