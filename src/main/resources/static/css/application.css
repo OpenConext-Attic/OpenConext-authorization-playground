@@ -164,7 +164,10 @@ body {
 
 form input[type=text] {
   font-size: 12px;
-  padding: 8px; }
+  padding-left: 8px;
+  padding-right: 8px;
+  height: 30px;
+}
   form input[type=text].field-error {
     border: solid 1px #dd3939; }
     form input[type=text].field-error:focus {
