@@ -45,10 +45,9 @@
                 <p class="help-block">The scope for which to grant access</p>
 
                 <label>OAuth grant type</label>
-                <input id="authCode" th:field="*{grantType}" type="radio" value="authCode"/><span class="mar">Authorization code</span>
-                <input id="implicitGrant" th:field="*{grantType}" type="radio" value="implicit"/><span>Implicit</span>
-                <input id="clientCredentials" th:field="*{grantType}" type="radio" value="clientCredentials"/><span
-                class="mar">Client Credentials</span>
+                <input id="authCode" th:field="*{grantType}" type="radio" value="authCode"/><label for="authCode" class="radio-label">Authorization code</label>
+                <input id="implicitGrant" th:field="*{grantType}" type="radio" value="implicit"/><label for="implicitGrant" class="radio-label">Implicit</label>
+                <input id="clientCredentials" th:field="*{grantType}" type="radio" value="clientCredentials"/><label for="clientCredentials" class="radio-label">Client Credentials</label>
 
                 <p class="help-block">A credential representing the resource
                   owner's authorization (to access its protected resources) used by the

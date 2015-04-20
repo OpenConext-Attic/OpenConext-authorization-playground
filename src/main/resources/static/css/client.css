@@ -36,3 +36,10 @@ div.fields label {
 input + span {
   margin: 0px 5px;
 }
+
+div.fields label.radio-label {
+  font-weight: 300;
+  display: inline-block;
+  margin: 0px 5px;
+}
+
