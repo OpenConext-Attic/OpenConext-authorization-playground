@@ -56,7 +56,8 @@
                   <label for="noRedirectUri">Use no redirect URI</label>
                   <input id="noRedirectUri" th:field="*{noRedirectUri}" type="checkbox"/>
 
-                  <p class="help-block">Use the redirect URI pre-configured for this client.</p>
+                  <p class="help-block">Check the above to ensure we don't use the playground redirect-uri. Then after the authorization code is granted you will be redirected
+                    to the pre-configured redirect for this client. This of course depends on which authorization server you are using.</p>
                 </section>
 
                 <section data-show-implicit="false">
