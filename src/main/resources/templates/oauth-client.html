@@ -12,7 +12,7 @@
     with which the VOOT Resource Server can be accessed to query protected resources.</p>
 
   <div class="row">
-    <form class="col-md-8" name="test-oauth-server" action="/" th:object="${settings}" method="post">
+    <form class="col-md-6" name="test-oauth-server" action="/" th:object="${settings}" method="post">
       <div class="panel-group" id="mainOptions" role="tablist">
         <div class="panel panel-default">
           <div class="panel-heading" role="tab" id="step1heading">
@@ -147,7 +147,7 @@
       <input id="step" type="hidden" th:value="${settings.step}" name="step"/>
       <input id="parseAnchorForAccessToken" type="hidden" th:value="${parseAnchorForAccessToken}"/>
     </form>
-    <div class="col-md-4">
+    <div class="col-md-6">
       <div id="request">
         <div class="alert alert-info alert-http">HTTP Request</div>
         <pre id="requestInfo" class="prettyprint pre-scrollable pre-json" th:text="${requestInfo}">requestInfo </pre>

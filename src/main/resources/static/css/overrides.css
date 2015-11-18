@@ -1,0 +1,14 @@
+.panel-default > .panel-heading .badge {
+  background-color: #319bb8;
+}
+
+form input[type=text] {
+  font-size: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
+  height: 30px;
+}
+
+input.input-xlarge {
+  width: 100%;
+}

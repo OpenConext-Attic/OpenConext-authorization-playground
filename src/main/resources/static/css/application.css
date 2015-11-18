@@ -164,10 +164,7 @@ body {
 
 form input[type=text] {
   font-size: 12px;
-  padding-left: 8px;
-  padding-right: 8px;
-  height: 30px;
-}
+  padding: 8px; }
   form input[type=text].field-error {
     border: solid 1px #dd3939; }
     form input[type=text].field-error:focus {
@@ -214,7 +211,8 @@ form .buttons {
     float: left;
     line-height: 30px; }
   .mod-header h1 a {
-    text-decoration: none; }
+    text-decoration: none;
+    font-size: 28px; }
   .mod-header h1.hover {
     text-decoration: none; }
 
@@ -248,7 +246,8 @@ form .buttons {
 
 .badge-label {
   margin-left: 10px;
-  vertical-align: bottom; }
+  vertical-align: bottom;
+  color: #319bb8; }
 
 .c-button {
   background: #4DB3CF;
