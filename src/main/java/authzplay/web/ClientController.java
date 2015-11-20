@@ -1,6 +1,8 @@
 package authzplay.web;
 
 import authzplay.ClientSettings;
+import authzplay.JWKVerifier;
+import com.nimbusds.jose.JWSHeader;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.PartialRequestBuilder;
@@ -21,6 +23,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +32,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @Configuration
@@ -37,19 +43,57 @@ public class ClientController {
 
   @Value("${oauth.redirect_uri}")
   private String redirectUri;
+
   @Value("${oauth.token_uri}")
   private String tokenUri;
+
   @Value("${oauth.client_id}")
   private String clientId;
+
   @Value("${oauth.client_secret}")
   private String clientSecret;
+
   @Value("${oauth.authorize_url}")
   private String authorizeUrl;
+
   @Value("${oauth.resource_server_api_url}")
   private String resourceServerApiUrl;
 
   @Value("${oauth.scopes}")
   private String scopes;
+
+  @Value("${oidc.redirect_uri}")
+  private String oidcRedirectUri;
+
+  @Value("${oidc.token_uri}")
+  private String oidcTokenUri;
+
+  @Value("${oidc.client_id}")
+  private String oidcClientId;
+
+  @Value("${oidc.client_secret}")
+  private String oidcClientSecret;
+
+  @Value("${oidc.scopes}")
+  private String oidcScopes;
+
+  @Value("${oidc.authorize_url}")
+  private String oidcAuthorizeUrl;
+
+  @Value("${oidc.resource_server_api_url}")
+  private String oidcResourceServerApiUrl;
+
+  @Value("${oidc.introspect_url}")
+  private String oidcIntrospectUrl;
+
+  @Value("${oidc.user_info_url}")
+  private String oidcUserInfoUrl;
+
+  @Value("${oidc.jwk_url}")
+  private String oidcJwkUrl;
+
+  @Value("${oidc.well_known_configuration_url}")
+  private String oidcWellKnownConfigurationUrl;
 
   private static final String AUTHORIZATION = "Authorization";
   private static final String SETTINGS = "settings";
@@ -66,15 +110,15 @@ public class ClientController {
   }
 
   @RequestMapping(value = {"/"}, method = RequestMethod.GET)
-  public String start(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
+  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oauth2", required = false) String modus)
     throws IOException {
-    modelMap.addAttribute(SETTINGS, createDefaultSettings());
+    modelMap.addAttribute(SETTINGS, createDefaultSettings(modus));
     return "oauth-client";
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "reset")
-  public String reset(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
-    return start(modelMap, request, response);
+  public String reset(ModelMap modelMap) throws IOException {
+    return start(modelMap, "oauth2");
   }
 
 
@@ -193,9 +237,32 @@ public class ClientController {
     }
   }
 
-  protected ClientSettings createDefaultSettings() {
-    ClientSettings settings = new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl, scopes);
+  private String parseJWT(String jwtToken) throws IOException, ParseException {
+    ClientResponse clientResponse = client.resource(oidcJwkUrl).get(ClientResponse.class);
+    String jwkKeys = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
+    JWKVerifier verifier = new JWKVerifier(jwkKeys,jwtToken);
+    JWSHeader header = verifier.header();
+
+    Map<String, Object> headerMap = new HashMap<>();
+    headerMap.put("kid",header.getKeyID());
+    headerMap.put("alg",header.getAlgorithm().getName());
+
+    Map<String, Object> claims = verifier.claims().getClaims();
+
+    Map<String, Map<String, Object>> result = new HashMap<>();
+    result.put("header", headerMap);
+    result.put("payload", claims);
+
+    return mapper.writeValueAsString(result);
+  }
+
+  protected ClientSettings createDefaultSettings(String modus) {
+    ClientSettings settings = "oauth2".equalsIgnoreCase(modus) ?
+      new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl, scopes) :
+      new ClientSettings(oidcTokenUri, oidcClientId, oidcClientSecret, oidcAuthorizeUrl, "step1", oidcResourceServerApiUrl, oidcScopes) ;
     settings.setGrantType("authCode");
+    settings.setResponseType("code");
+    settings.setOpenIdConnect(true);
     return settings;
 
   }

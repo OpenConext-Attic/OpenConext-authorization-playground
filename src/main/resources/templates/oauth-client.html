@@ -8,8 +8,8 @@
 <body>
 <div layout:fragment="content">
 
-  <p>This OAuth2 client app first obtains an Access Token from the Authorization Server
-    with which the VOOT Resource Server can be accessed to query protected resources.</p>
+  <p>This OAuth2 and OpenID Connect client app first obtains an Access Token from an Authorization Server and can subsequently call Resource Servers (e.g. VOOT).</p>
+  <p>Click <a href="/?modus=oidc" th:href="@{/?modus=oidc}">here</a> for OIDC defaults.</p>
 
   <div class="row">
     <form class="col-md-6" name="test-oauth-server" action="/" th:object="${settings}" method="post">
@@ -52,6 +52,22 @@
                 <p class="help-block">A credential representing the resource
                   owner's authorization (to access its protected resources) used by the
                   client to obtain an access token</p>
+
+                <label>OpenID Connect</label>
+                <input id="openIdConnect" th:field="*{openIdConnect}" type="checkbox"/>
+
+                <p class="help-block">Check the above to make <a href="http://openid.net/specs/openid-connect-core-1_0.html" target="_blank">OpenID Connect</a>  requests.</p>
+
+                <section data-show-oidc="false">
+                  <label for="noRedirectUri">Response type</label>
+
+                  <input id="code" th:field="*{responseType}" type="radio" value="code"/><label for="authCode" class="radio-label">Code response</label>
+                  <input id="idToken" th:field="*{responseType}" type="radio" value="id_token"/><label for="implicitGrant" class="radio-label">ID Token response</label>
+
+                  <p class="help-block">The Response Type request parameter response_type informs the Authorization Server of the desired authorization processing flow,
+                    including what parameters are returned from the endpoints used.</p>
+                </section>
+
                 <section data-show-client-credentials="false">
                   <label for="noRedirectUri">Use no redirect URI</label>
                   <input id="noRedirectUri" th:field="*{noRedirectUri}" type="checkbox"/>
@@ -135,6 +151,45 @@
 
                 <div class="buttons">
                   <button name="step3" class="c-button">Fetch</button>
+                  <button name="reset" class="c-button">Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="step4heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-parent="#mainOptions" href="#step4" aria-expanded="false"
+                 aria-controls="step4">
+                <span class="badge">4</span><span class="badge-label">OIDC Requests</span>
+              </a>
+            </h4>
+          </div>
+          <div id="step4" class="panel-collapse collapse" role="tabpanel" aria-labelledby="step4heading">
+            <div class="panel-body">
+              <div class="fields">
+                <label for="accessToken">Access token</label>
+                <input id="accessToken" type="text" th:field="*{accessToken}" class="input-xlarge" readonly="true"/>
+
+                <p class="help-block">Note: this is the accessToken for
+                  all subsequent OAuth queries</p>
+
+                <label for="tokenId">Token ID</label>
+                <input id="tokenId" type="text" th:field="*{tokenId}" class="input-xlarge" readonly="true"/>
+
+                <p class="help-block">Note: this is the TokenID we have received</p>
+
+                <label for="requestURL">API Request </label>
+                <input id="requestURL" type="text" th:field="*{requestURL}" class="input-xlarge"/>
+
+                <p class="help-block">An endpoint on the <a href="http://openvoot.org/protocol/"
+                                                            target="_blank">VOOT</a> Resource server</p>
+
+                <div class="buttons">
+                  <button name="step4" class="c-button">Fetch</button>
                   <button name="reset" class="c-button">Reset</button>
                 </div>
               </div>

@@ -35,6 +35,9 @@ public class ClientSettings {
   private String step ;
   private String requestURL;
   private String accessToken;
+  private String tokenId;
+  private String responseType;
+  private boolean openIdConnect;
 
   public ClientSettings() {
     super();
@@ -193,5 +196,29 @@ public class ClientSettings {
 
   public void setNoRedirectUri(boolean noRedirectUri) {
     this.noRedirectUri = noRedirectUri;
+  }
+
+  public String getTokenId() {
+    return tokenId;
+  }
+
+  public void setTokenId(String tokenId) {
+    this.tokenId = tokenId;
+  }
+
+  public String getResponseType() {
+    return responseType;
+  }
+
+  public void setResponseType(String responseType) {
+    this.responseType = responseType;
+  }
+
+  public boolean isOpenIdConnect() {
+    return openIdConnect;
+  }
+
+  public void setOpenIdConnect(boolean openIdConnect) {
+    this.openIdConnect = openIdConnect;
   }
 }
