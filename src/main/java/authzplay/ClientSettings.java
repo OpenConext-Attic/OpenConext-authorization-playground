@@ -35,9 +35,14 @@ public class ClientSettings {
   private String step ;
   private String requestURL;
   private String accessToken;
-  private String tokenId;
+  private String idToken;
   private String responseType;
   private boolean openIdConnect;
+
+  private String oidcIntrospectUrl;
+  private String oidcUserInfoUrl;
+  private String oidcJwkUrl;
+  private String oidcWellKnownConfigurationUrl;
 
   public ClientSettings() {
     super();
@@ -198,12 +203,12 @@ public class ClientSettings {
     this.noRedirectUri = noRedirectUri;
   }
 
-  public String getTokenId() {
-    return tokenId;
+  public String getIdToken() {
+    return idToken;
   }
 
-  public void setTokenId(String tokenId) {
-    this.tokenId = tokenId;
+  public void setIdToken(String idToken) {
+    this.idToken = idToken;
   }
 
   public String getResponseType() {
@@ -220,5 +225,37 @@ public class ClientSettings {
 
   public void setOpenIdConnect(boolean openIdConnect) {
     this.openIdConnect = openIdConnect;
+  }
+
+  public String getOidcIntrospectUrl() {
+    return oidcIntrospectUrl;
+  }
+
+  public void setOidcIntrospectUrl(String oidcIntrospectUrl) {
+    this.oidcIntrospectUrl = oidcIntrospectUrl;
+  }
+
+  public String getOidcUserInfoUrl() {
+    return oidcUserInfoUrl;
+  }
+
+  public void setOidcUserInfoUrl(String oidcUserInfoUrl) {
+    this.oidcUserInfoUrl = oidcUserInfoUrl;
+  }
+
+  public String getOidcJwkUrl() {
+    return oidcJwkUrl;
+  }
+
+  public void setOidcJwkUrl(String oidcJwkUrl) {
+    this.oidcJwkUrl = oidcJwkUrl;
+  }
+
+  public String getOidcWellKnownConfigurationUrl() {
+    return oidcWellKnownConfigurationUrl;
+  }
+
+  public void setOidcWellKnownConfigurationUrl(String oidcWellKnownConfigurationUrl) {
+    this.oidcWellKnownConfigurationUrl = oidcWellKnownConfigurationUrl;
   }
 }

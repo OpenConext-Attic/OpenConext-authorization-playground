@@ -27,4 +27,19 @@ $(function () {
 
   }
 
+  // we are in step 3 of id_token
+  if ($('#parseAnchorForIdToken').val() == 'true') {
+    var hash = window.location.hash.replace("#", "");
+    $('#parseAnchorForIdToken').val('');
+
+    $('#responseInfo').html(hash);
+    $.each(hash.split("&"), function (i, value) {
+      var param = value.split("=");
+      if (param[0] == 'id_token') {
+        $('#oidcIdToken').val(param[1]);
+      }
+    });
+
+  }
+
 });

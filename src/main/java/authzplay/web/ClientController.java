@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -112,7 +111,8 @@ public class ClientController {
   @RequestMapping(value = {"/"}, method = RequestMethod.GET)
   public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oauth2", required = false) String modus)
     throws IOException {
-    modelMap.addAttribute(SETTINGS, createDefaultSettings(modus));
+    ClientSettings settings = createDefaultSettings(modus);
+    modelMap.addAttribute(SETTINGS, settings);
     return "oauth-client";
   }
 
@@ -159,6 +159,8 @@ public class ClientController {
     ClientSettings settings = (ClientSettings) request.getSession().getAttribute(SETTINGS);
     if (settings.getGrantType().equals("implicit")) {
       modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
+    } else if (settings.getResponseType().equals("id_token")) {
+      modelMap.addAttribute("parseAnchorForIdToken", Boolean.TRUE);
     } else {
 
       MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
@@ -187,16 +189,22 @@ public class ClientController {
       if (clientResponse.getStatus() == 200) {
         HashMap map = mapper.readValue(json, HashMap.class);
         settings.setAccessToken((String) map.get("access_token"));
+        if (settings.isOpenIdConnect()) {
+          settings.setIdToken((String) map.get("id_token"));
+        }
       }
     }
     modelMap.put(SETTINGS, settings);
-    settings.setStep("step3");
     return "oauth-client";
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step3")
   public String step3(ModelMap modelMap, @ModelAttribute("settings")
-  ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
+  ClientSettings settings) throws IOException {
+    return doResourceCall(modelMap, settings);
+  }
+
+  private String doResourceCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings) throws IOException {
     Builder builder = client.resource(settings.getRequestURL())
       .header(AUTHORIZATION, "bearer ".concat(settings.getAccessToken()))
       .type(MediaType.APPLICATION_JSON_TYPE)
@@ -240,12 +248,12 @@ public class ClientController {
   private String parseJWT(String jwtToken) throws IOException, ParseException {
     ClientResponse clientResponse = client.resource(oidcJwkUrl).get(ClientResponse.class);
     String jwkKeys = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
-    JWKVerifier verifier = new JWKVerifier(jwkKeys,jwtToken);
+    JWKVerifier verifier = new JWKVerifier(jwkKeys, jwtToken);
     JWSHeader header = verifier.header();
 
     Map<String, Object> headerMap = new HashMap<>();
-    headerMap.put("kid",header.getKeyID());
-    headerMap.put("alg",header.getAlgorithm().getName());
+    headerMap.put("kid", header.getKeyID());
+    headerMap.put("alg", header.getAlgorithm().getName());
 
     Map<String, Object> claims = verifier.claims().getClaims();
 
@@ -253,16 +261,24 @@ public class ClientController {
     result.put("header", headerMap);
     result.put("payload", claims);
 
-    return mapper.writeValueAsString(result);
+    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
   }
 
   protected ClientSettings createDefaultSettings(String modus) {
-    ClientSettings settings = "oauth2".equalsIgnoreCase(modus) ?
-      new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl, scopes) :
-      new ClientSettings(oidcTokenUri, oidcClientId, oidcClientSecret, oidcAuthorizeUrl, "step1", oidcResourceServerApiUrl, oidcScopes) ;
+    ClientSettings settings;
+
+    if ("oauth2".equalsIgnoreCase(modus)) {
+      settings = new ClientSettings(tokenUri, clientId, clientSecret, authorizeUrl, "step1", resourceServerApiUrl, scopes);
+    } else {
+      settings = new ClientSettings(oidcTokenUri, oidcClientId, oidcClientSecret, oidcAuthorizeUrl, "step1", oidcResourceServerApiUrl, oidcScopes);
+      settings.setOpenIdConnect(true);
+      settings.setOidcIntrospectUrl(oidcIntrospectUrl);
+      settings.setOidcJwkUrl(oidcJwkUrl);
+      settings.setOidcUserInfoUrl(oidcUserInfoUrl);
+      settings.setOidcWellKnownConfigurationUrl(oidcWellKnownConfigurationUrl);
+    }
     settings.setGrantType("authCode");
     settings.setResponseType("code");
-    settings.setOpenIdConnect(true);
     return settings;
 
   }

@@ -87,7 +87,7 @@ input, select {
   vertical-align: middle; }
 
 .l-main {
-  padding: 30px; }
+  padding: 10px 30px 30px 30px; }
   .l-main:after {
     content: "";
     display: table;
@@ -196,7 +196,7 @@ form .buttons {
     line-height: 40px; }
 
 .mod-header {
-  padding: 20px 30px;
+  padding: 20px 30px 10px 30px;
   background: #fff;
   border-bottom: 2px solid #4DB3CF; }
   .mod-header:after {
@@ -249,23 +249,31 @@ form .buttons {
   vertical-align: bottom;
   color: #319bb8; }
 
-.c-button {
+.c-button, .c-button-link {
   background: #4DB3CF;
   padding: 7px 15px;
   border-radius: 5px;
+  border: none;
   color: #fff;
   text-decoration: none;
   display: inline-block; }
-  .c-button:hover {
-    background: #319bb8; }
-  .c-button.narrow {
+  .c-button:hover, .c-button-link:hover {
+    background: #319bb8;
+    text-decoration: none; }
+  .c-button.narrow, .narrow.c-button-link {
     padding: 3px 10px; }
-  .c-button.disabled {
+  .c-button.disabled, .disabled.c-button-link {
     opacity: 0.5;
     pointer-events: none; }
 
-input[type=submit].c-button, button.c-button {
-  border: none;
+.c-button-link {
+  background: #fff;
+  color: #4DB3CF;
+  border: 1px solid #4DB3CF; }
+  .c-button-link:hover {
+    background: #e6e6e6; }
+
+input[type=submit].c-button, input[type=submit].c-button-link, button.c-button, button.c-button-link {
   font-size: 100%; }
 
 /*# sourceMappingURL=application.css.map */

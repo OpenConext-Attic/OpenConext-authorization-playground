@@ -2,12 +2,14 @@
   background: $blue
   padding: 7px 15px
   border-radius: $br
+  border: none
   color: #fff
   text-decoration: none
   display: inline-block
 
   &:hover
     background: darken($blue,10)
+    text-decoration: none
 
   &.narrow
     padding: 3px 10px
@@ -16,7 +18,16 @@
     opacity: 0.5
     pointer-events: none
 
+.c-button-link
+  @extend .c-button
+  background: #fff
+  color: $blue
+  border: 1px solid $blue
+
+  &:hover
+    background: darken(#fff,10)
+
+
 input[type=submit],button
   &.c-button
-    border: none
     font-size: 100%
