@@ -139,15 +139,23 @@
           <div id="step3" class="panel-collapse collapse" role="tabpanel" aria-labelledby="step3heading">
             <div class="panel-body">
               <div class="fields">
-                <label for="accessToken">Access token</label>
-                <input id="accessToken" type="text" th:field="*{accessToken}" class="input-xlarge" readonly="true"/>
-
-                <p class="help-block">The accessToken for all subsequent OAuth queries</p>
+                <div th:if="${settings.accessToken != null}">
+                  <label for="accessToken">Access token</label>
+                  <input id="accessToken" type="text" th:field="*{accessToken}" class="input-xlarge" readonly="true"/>
+                </div>
                 <div th:if="${settings.openIdConnect}">
-                <label for="oidcIdToken">ID token</label>
-                <input id="oidcIdToken" type="text" th:field="*{idToken}" class="input-xlarge" readonly="true"/>
-
-                <p class="help-block">The ID Token we have received</p>
+                  <input type="hidden" th:field="*{accessTokenJson}"/>
+                  <pre id="accessTokenJsonPrint" class="prettyprint pre-scrollable pre-json" th:text="${settings.accessTokenJson}">accessTokenJson </pre>
+                </div>
+                <div th:if="${settings.accessToken != null}">
+                  <p class="help-block">The accessToken for all subsequent OAuth queries</p>
+                </div>
+                <div th:if="${settings.openIdConnect and settings.idToken != null}">
+                  <label for="oidcIdToken">ID token</label>
+                  <input id="oidcIdToken" type="text" th:field="*{idToken}" class="input-xlarge" readonly="true"/>
+                  <input type="hidden" th:field="*{idTokenJson}"/>
+                  <pre id="idTokenJsonPrint" class="prettyprint pre-scrollable pre-json" th:text="${settings.idTokenJson}">idTokenJson </pre>
+                  <p class="help-block">The ID Token we have received</p>
                 </div>
                 <label for="requestURL">API Request </label>
                 <input id="requestURL" type="text" th:field="*{requestURL}" class="input-xlarge"/>
@@ -161,8 +169,10 @@
                 <div th:if="${settings.openIdConnect}" class="buttons">
                   <button name="introspect" class="c-button-link">Introspect endpoint</button>
                   <button name="userInfo" class="c-button-link">UserInfo endpoint</button>
-                  <a class="c-button-link" href="/jwk" target="_blank" th:href="@{${settings.oidcJwkUrl}}">JWK endpoint</a>
-                  <a class="c-button-link" href="/well-known/configuration" target="_blank" th:href="@{${settings.oidcWellKnownConfigurationUrl}}">Configuration endpoint</a>
+                  <a class="c-button-link" th:href="${settings.oidcJwkUrl}" target="_blank">JWK endpoint</a>
+                  <input type="hidden" th:field="*{oidcJwkUrl}"/>
+                  <a class="c-button-link" th:href="${settings.oidcWellKnownConfigurationUrl}" target="_blank">Configuration endpoint</a>
+                  <input type="hidden" th:field="*{oidcWellKnownConfigurationUrl}"/>
                 </div>
               </div>
             </div>

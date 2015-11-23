@@ -15,11 +15,14 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -102,6 +105,9 @@ public class ClientController {
 
   private Client client;
 
+  @Autowired
+  private Environment environment;
+
   public ClientController() {
     ClientConfig config = new DefaultClientConfig();
     config.getClasses().add(JacksonJsonProvider.class);
@@ -109,7 +115,7 @@ public class ClientController {
   }
 
   @RequestMapping(value = {"/"}, method = RequestMethod.GET)
-  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oauth2", required = false) String modus)
+  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oidc", required = false) String modus)
     throws IOException {
     ClientSettings settings = createDefaultSettings(modus);
     modelMap.addAttribute(SETTINGS, settings);
@@ -118,20 +124,27 @@ public class ClientController {
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "reset")
   public String reset(ModelMap modelMap) throws IOException {
-    return start(modelMap, "oauth2");
+    return start(modelMap, "oidc");
   }
 
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step1")
   public String step1(ModelMap modelMap, @ModelAttribute("settings")
-  ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
+  ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException, ParseException {
     if (settings.getGrantType().equals("clientCredentials")) {
       settings.setStep("step3");
       request.getSession().setAttribute(SETTINGS, settings);
-      redirect(modelMap, request);
+      redirect(modelMap, request, response);
     } else {
       settings.setStep("step2");
-      String responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
+      String responseType;
+      String responseTypeFromClient = settings.getResponseType();
+      if (StringUtils.hasText(responseTypeFromClient)) {
+        responseType = responseTypeFromClient;
+      } else {
+        responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
+      }
+
       String encodedScopes = URLEncoder.encode(settings.getOauthScopes(), "UTF-8");
       String authorizationUrlComplete = String.format(
         settings.getAuthorizationURL()
@@ -146,17 +159,18 @@ public class ClientController {
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step2")
-  public void step2(ModelMap modelMap, @ModelAttribute("settings")
-  ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void step2(@ModelAttribute("settings")
+                    ClientSettings settings, HttpServletRequest request, HttpServletResponse response) throws IOException {
     request.getSession().setAttribute(SETTINGS, settings);
     String authorizationURLComplete = settings.getAuthorizationURLComplete();
     response.sendRedirect(authorizationURLComplete);
   }
 
   @RequestMapping(value = "redirect", method = RequestMethod.GET)
-  public String redirect(ModelMap modelMap, HttpServletRequest request)
-    throws IOException {
+  public String redirect(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ParseException {
     ClientSettings settings = (ClientSettings) request.getSession().getAttribute(SETTINGS);
+    String location = response.getHeader("Location");
     if (settings.getGrantType().equals("implicit")) {
       modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
     } else if (settings.getResponseType().equals("id_token")) {
@@ -173,15 +187,12 @@ public class ClientController {
 
       formData.add("redirect_uri", redirectUri);
 
-      String auth = "Basic ".concat(new String(Base64.encodeBase64(settings.getOauthKey().concat(":")
-        .concat(settings.getOauthSecret()).getBytes())));
-      Builder builder = client.resource(settings.getAccessTokenEndPoint()).header(AUTHORIZATION, auth)
-        .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
+      Builder builder = getBasicAuthBuilder(settings, settings.getAccessTokenEndPoint());
       OutBoundHeaders headers = getHeadersCopy(builder);
       ClientResponse clientResponse = builder.post(ClientResponse.class, formData);
       addResponseInfo(modelMap, clientResponse);
       String json = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
-      modelMap.put("rawResponseInfo", json);
+      modelMap.put("rawResponseInfo", getRawResponseInfo(json));
       modelMap.put(
         "requestInfo",
         "Method: POST".concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
@@ -190,39 +201,85 @@ public class ClientController {
         HashMap map = mapper.readValue(json, HashMap.class);
         settings.setAccessToken((String) map.get("access_token"));
         if (settings.isOpenIdConnect()) {
-          settings.setIdToken((String) map.get("id_token"));
+          settings.setAccessTokenJson(parseJWT(settings.getAccessToken()));
+          if (map.containsKey("id_token")) {
+            settings.setIdToken((String) map.get("id_token"));
+            settings.setIdTokenJson(parseJWT(settings.getIdToken()));
+          }
         }
+
       }
     }
     modelMap.put(SETTINGS, settings);
+    settings.setStep("step3");
     return "oauth-client";
+  }
+
+  private String getRawResponseInfo(String json) throws IOException {
+    //looks silly but easiest way
+    Map inBetween = mapper.readValue(json, Map.class);
+    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inBetween);
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step3")
   public String step3(ModelMap modelMap, @ModelAttribute("settings")
   ClientSettings settings) throws IOException {
-    return doResourceCall(modelMap, settings);
+    String requestURL = settings.getRequestURL();
+    String accessToken = settings.getAccessToken();
+    return performResourceCall(modelMap, settings, requestURL, accessToken);
   }
 
-  private String doResourceCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings) throws IOException {
-    Builder builder = client.resource(settings.getRequestURL())
-      .header(AUTHORIZATION, "bearer ".concat(settings.getAccessToken()))
+  private String performResourceCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL, String accessToken) throws IOException {
+    Builder builder = client.resource(requestURL)
+      .header(AUTHORIZATION, "bearer ".concat(accessToken))
       .type(MediaType.APPLICATION_JSON_TYPE)
       .accept(MediaType.APPLICATION_JSON_TYPE);
+    return doPerformCall(modelMap, settings, requestURL, builder);
+  }
+
+  private String doPerformCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL, Builder builder) throws IOException {
     OutBoundHeaders headers = getHeadersCopy(builder);
     long start = System.currentTimeMillis();
     ClientResponse clientResponse = builder.get(ClientResponse.class);
     String json = IOUtils.toString(clientResponse.getEntityInputStream());
     settings.setStep("step3");
     modelMap.put(SETTINGS, settings);
-    modelMap.put("requestInfo", "Method: GET".concat(BR).concat("URL: ").concat(settings.getRequestURL()).concat(BR)
+    modelMap.put("requestInfo", "Method: GET".concat(BR).concat("URL: ").concat(requestURL).concat(BR)
       .concat("Headers: ").concat(headers.toString()));
     addResponseInfo(modelMap, clientResponse);
     modelMap.put("responseTime", String.format("Took %s ms", System.currentTimeMillis() - start));
-    modelMap.put("rawResponseInfo", json);
+    modelMap.put("rawResponseInfo", getRawResponseInfo(json));
     return "oauth-client";
   }
 
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "userInfo")
+  public String userInfo(ModelMap modelMap, @ModelAttribute("settings")
+  ClientSettings settings) throws IOException {
+    String accessToken = settings.getAccessToken();
+    return performResourceCall(modelMap, settings, oidcUserInfoUrl, accessToken);
+  }
+
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "introspect")
+  public String introspect(ModelMap modelMap, @ModelAttribute("settings")
+  ClientSettings settings) throws IOException {
+    String accessToken = settings.getAccessToken();
+    String requestURL = oidcIntrospectUrl + "?token=" + accessToken;
+    Builder builder = getBasicAuthBuilder(settings, requestURL);
+
+    return doPerformCall(modelMap, settings, requestURL, builder);
+  }
+
+  @RequestMapping(value = "/decodeJwtToken", method = RequestMethod.GET)
+  public String decodeJwtToken(@RequestParam String jwtToken) throws IOException, ParseException {
+    return parseJWT(jwtToken);
+  }
+
+  private Builder getBasicAuthBuilder(ClientSettings settings, String requestURL) {
+    String auth = "Basic ".concat(new String(Base64.encodeBase64(settings.getOauthKey().concat(":")
+      .concat(settings.getOauthSecret()).getBytes())));
+    return client.resource(requestURL).header(AUTHORIZATION, auth)
+      .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
+  }
 
   private void addResponseInfo(ModelMap modelMap, ClientResponse clientResponse) {
     modelMap.put(

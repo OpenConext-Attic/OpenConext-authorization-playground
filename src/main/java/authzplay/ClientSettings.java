@@ -44,6 +44,9 @@ public class ClientSettings {
   private String oidcJwkUrl;
   private String oidcWellKnownConfigurationUrl;
 
+  private String accessTokenJson;
+  private String idTokenJson;
+
   public ClientSettings() {
     super();
   }
@@ -257,5 +260,21 @@ public class ClientSettings {
 
   public void setOidcWellKnownConfigurationUrl(String oidcWellKnownConfigurationUrl) {
     this.oidcWellKnownConfigurationUrl = oidcWellKnownConfigurationUrl;
+  }
+
+  public String getAccessTokenJson() {
+    return accessTokenJson;
+  }
+
+  public void setAccessTokenJson(String accessTokenJson) {
+    this.accessTokenJson = accessTokenJson;
+  }
+
+  public String getIdTokenJson() {
+    return idTokenJson;
+  }
+
+  public void setIdTokenJson(String idTokenJson) {
+    this.idTokenJson = idTokenJson;
   }
 }
