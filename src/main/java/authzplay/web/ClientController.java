@@ -128,7 +128,7 @@ public class ClientController {
     if (settings.getGrantType().equals("clientCredentials")) {
       settings.setStep("step3");
       request.getSession().setAttribute(SETTINGS, settings);
-      redirect(modelMap, request, response);
+      redirect(modelMap, request);
     } else {
       settings.setStep("step2");
       String responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
@@ -154,7 +154,7 @@ public class ClientController {
   }
 
   @RequestMapping(value = "redirect", method = RequestMethod.GET)
-  public String redirect(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
+  public String redirect(ModelMap modelMap, HttpServletRequest request)
     throws IOException {
     ClientSettings settings = (ClientSettings) request.getSession().getAttribute(SETTINGS);
     if (settings.getGrantType().equals("implicit")) {
