@@ -18,6 +18,8 @@
  */
 package authzplay;
 
+import org.springframework.util.StringUtils;
+
 /**
  * Form object for the test page
  * 
@@ -276,5 +278,14 @@ public class ClientSettings {
 
   public void setIdTokenJson(String idTokenJson) {
     this.idTokenJson = idTokenJson;
+  }
+
+  public boolean isAccessTokenPresent() {
+    //might be that it is implicit, so we can't check for access token not null
+    return !"id_token".equals(responseType);
+  }
+
+  public boolean isIdTokenPresent() {
+    return oauthScopes.contains("openid") && !grantType.equals("clientCredentials");
   }
 }

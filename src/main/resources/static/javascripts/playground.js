@@ -9,6 +9,7 @@ $(function () {
   $("input[name='grantType']").click(function () {
     $('[data-show-client-credentials]').toggle(this.id !== 'clientCredentials');
     $('[data-show-implicit]').toggle(this.id !== 'implicitGrant');
+    $('[data-show-auth-code]').toggle(this.id === 'authCode');
   });
 
 
@@ -18,12 +19,21 @@ $(function () {
     $('#parseAnchorForAccessToken').val('');
 
     $('#responseInfo').html(hash);
+    var accessToken;
     $.each(hash.split("&"), function (i, value) {
       var param = value.split("=");
       if (param[0] == 'access_token') {
-        $('#accessToken').val(param[1]);
+        accessToken = param[1];
+        $('#accessToken').val(accessToken);
       }
     });
+    if ($('#openIdConnect').val() == 'true') {
+      var jqxhr = $.get("decodeJwtToken?jwtToken=" + accessToken).done(function () {
+        $('#accessTokenJsonPrint').html(jqxhr.responseText);
+        $('#accessTokenJsonPrintInput').val(jqxhr.responseText)
+
+      });
+    }
 
   }
 
@@ -33,13 +43,18 @@ $(function () {
     $('#parseAnchorForIdToken').val('');
 
     $('#responseInfo').html(hash);
+    var oidcIdToken;
     $.each(hash.split("&"), function (i, value) {
       var param = value.split("=");
       if (param[0] == 'id_token') {
-        $('#oidcIdToken').val(param[1]);
+        oidcIdToken = param[1];
+        $('#oidcIdToken').val(oidcIdToken);
       }
     });
-
+    var jqxhr = $.get("decodeJwtToken?jwtToken=" + oidcIdToken).done(function () {
+      $('#idTokenJsonPrint').html(jqxhr.responseText);
+      $('#idTokenJsonPrintInput').val(jqxhr.responseText)
+    });
   }
 
 });

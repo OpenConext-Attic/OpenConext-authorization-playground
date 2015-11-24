@@ -11,6 +11,8 @@ import com.nimbusds.jwt.SignedJWT;
 import org.springframework.util.Assert;
 
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 // Not thread-safe. Instantiate for every verify action
 public class JWKVerifier {
@@ -39,5 +41,21 @@ public class JWKVerifier {
 
   public JWTClaimsSet claims() throws ParseException {
     return signedJWT.getJWTClaimsSet();
+  }
+
+  public Map<String, Map<String, Object>> toMap() throws ParseException {
+    JWSHeader header = header();
+
+    Map<String, Object> headerMap = new HashMap<>();
+    headerMap.put("kid", header.getKeyID());
+    headerMap.put("alg", header.getAlgorithm().getName());
+
+    Map<String, Object> claims = claims().getClaims();
+
+    Map<String, Map<String, Object>> result = new HashMap<>();
+    result.put("header", headerMap);
+    result.put("payload", claims);
+
+    return result;
   }
 }

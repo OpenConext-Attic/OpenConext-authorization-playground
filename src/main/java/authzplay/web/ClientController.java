@@ -23,10 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -105,9 +102,6 @@ public class ClientController {
 
   private Client client;
 
-  @Autowired
-  private Environment environment;
-
   public ClientController() {
     ClientConfig config = new DefaultClientConfig();
     config.getClasses().add(JacksonJsonProvider.class);
@@ -139,10 +133,11 @@ public class ClientController {
       settings.setStep("step2");
       String responseType;
       String responseTypeFromClient = settings.getResponseType();
-      if (StringUtils.hasText(responseTypeFromClient)) {
+      boolean implicit = settings.getGrantType().equals("implicit");
+      if (!implicit && StringUtils.hasText(responseTypeFromClient)) {
         responseType = responseTypeFromClient;
       } else {
-        responseType = settings.getGrantType().equals("implicit") ? "token" : "code";
+        responseType = implicit ? "token" : "code";
       }
 
       String encodedScopes = URLEncoder.encode(settings.getOauthScopes(), "UTF-8");
@@ -170,10 +165,13 @@ public class ClientController {
   public String redirect(ModelMap modelMap, HttpServletRequest request, HttpServletResponse response)
     throws IOException, ParseException {
     ClientSettings settings = (ClientSettings) request.getSession().getAttribute(SETTINGS);
-    String location = response.getHeader("Location");
+    String responseType = settings.getResponseType();
     if (settings.getGrantType().equals("implicit")) {
       modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
-    } else if (settings.getResponseType().equals("id_token")) {
+      if (settings.isOpenIdConnect()) {
+        modelMap.addAttribute("parseAnchorForIdToken", Boolean.TRUE);
+      }
+    } else if (StringUtils.hasText(responseType) && responseType.equals("id_token")) {
       modelMap.addAttribute("parseAnchorForIdToken", Boolean.TRUE);
     } else {
 
@@ -270,6 +268,7 @@ public class ClientController {
   }
 
   @RequestMapping(value = "/decodeJwtToken", method = RequestMethod.GET)
+  @ResponseBody
   public String decodeJwtToken(@RequestParam String jwtToken) throws IOException, ParseException {
     return parseJWT(jwtToken);
   }
@@ -306,19 +305,7 @@ public class ClientController {
     ClientResponse clientResponse = client.resource(oidcJwkUrl).get(ClientResponse.class);
     String jwkKeys = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
     JWKVerifier verifier = new JWKVerifier(jwkKeys, jwtToken);
-    JWSHeader header = verifier.header();
-
-    Map<String, Object> headerMap = new HashMap<>();
-    headerMap.put("kid", header.getKeyID());
-    headerMap.put("alg", header.getAlgorithm().getName());
-
-    Map<String, Object> claims = verifier.claims().getClaims();
-
-    Map<String, Map<String, Object>> result = new HashMap<>();
-    result.put("header", headerMap);
-    result.put("payload", claims);
-
-    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(verifier.toMap());
   }
 
   protected ClientSettings createDefaultSettings(String modus) {
