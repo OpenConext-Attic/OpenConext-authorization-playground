@@ -17,22 +17,13 @@ import java.util.Map;
 // Not thread-safe. Instantiate for every verify action
 public class JWKVerifier {
 
-  private final JWKSet jwkSet;
   private final SignedJWT signedJWT;
 
   /*
    * The specified string representing a JSON Web Key (JWK) set.
    */
-  public JWKVerifier(String jwkKeys, String token) throws ParseException {
-    this.jwkSet = JWKSet.parse(jwkKeys);
+  public JWKVerifier(String token) throws ParseException {
     this.signedJWT = SignedJWT.parse(token);
-  }
-
-  public boolean verifySigned(String kid) throws ParseException, JOSEException {
-    JWK jwk = this.jwkSet.getKeyByKeyId(kid);
-    Assert.notNull(jwk, "No JWK known with kid: " + kid);
-    RSASSAVerifier verifier = new RSASSAVerifier((com.nimbusds.jose.jwk.RSAKey) jwk);
-    return signedJWT.verify(verifier);
   }
 
   public JWSHeader header() {

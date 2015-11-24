@@ -302,9 +302,7 @@ public class ClientController {
   }
 
   private String parseJWT(String jwtToken) throws IOException, ParseException {
-    ClientResponse clientResponse = client.resource(oidcJwkUrl).get(ClientResponse.class);
-    String jwkKeys = new String(FileCopyUtils.copyToByteArray(clientResponse.getEntityInputStream()));
-    JWKVerifier verifier = new JWKVerifier(jwkKeys, jwtToken);
+    JWKVerifier verifier = new JWKVerifier(jwtToken);
     return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(verifier.toMap());
   }
 

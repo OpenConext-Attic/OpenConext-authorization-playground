@@ -15,7 +15,7 @@ $(function () {
 
   // we are in step 3 of implicit grant
   if ($('#parseAnchorForAccessToken').val() == 'true') {
-    var hash = window.location.hash.replace("#", "");
+    var hash = window.location.hash.slice(1);
     $('#parseAnchorForAccessToken').val('');
 
     $('#responseInfo').html(hash);
@@ -28,10 +28,9 @@ $(function () {
       }
     });
     if ($('#openIdConnect').val() == 'true') {
-      var jqxhr = $.get("decodeJwtToken?jwtToken=" + accessToken).done(function () {
-        $('#accessTokenJsonPrint').html(jqxhr.responseText);
-        $('#accessTokenJsonPrintInput').val(jqxhr.responseText)
-
+      var jqxhrAt = $.get("decodeJwtToken?jwtToken=" + accessToken).done(function () {
+        $('#accessTokenJsonPrint').html(jqxhrAt.responseText);
+        $('#accessTokenJsonPrintInput').val(jqxhrAt.responseText)
       });
     }
 
@@ -39,7 +38,7 @@ $(function () {
 
   // we are in step 3 of id_token
   if ($('#parseAnchorForIdToken').val() == 'true') {
-    var hash = window.location.hash.replace("#", "");
+    var hash = window.location.hash.slice(1);
     $('#parseAnchorForIdToken').val('');
 
     $('#responseInfo').html(hash);
@@ -51,9 +50,9 @@ $(function () {
         $('#oidcIdToken').val(oidcIdToken);
       }
     });
-    var jqxhr = $.get("decodeJwtToken?jwtToken=" + oidcIdToken).done(function () {
-      $('#idTokenJsonPrint').html(jqxhr.responseText);
-      $('#idTokenJsonPrintInput').val(jqxhr.responseText)
+    var jqxhrOidc = $.get("decodeJwtToken?jwtToken=" + oidcIdToken).done(function () {
+      $('#idTokenJsonPrint').html(jqxhrOidc.responseText);
+      $('#idTokenJsonPrintInput').val(jqxhrOidc.responseText)
     });
   }
 
