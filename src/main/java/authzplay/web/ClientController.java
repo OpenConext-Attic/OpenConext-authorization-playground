@@ -13,6 +13,7 @@ import com.sun.jersey.core.header.OutBoundHeaders;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,8 +216,8 @@ public class ClientController {
 
   private String getRawResponseInfo(String json) throws IOException {
     //looks silly but easiest way
-    Map inBetween = mapper.readValue(json, Map.class);
-    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inBetween);
+    JsonNode jsonNode = mapper.readTree(json);
+    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step3")
