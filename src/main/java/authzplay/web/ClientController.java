@@ -2,7 +2,6 @@ package authzplay.web;
 
 import authzplay.ClientSettings;
 import authzplay.JWKVerifier;
-import com.nimbusds.jose.JWSHeader;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.PartialRequestBuilder;
@@ -16,10 +15,8 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
@@ -35,7 +32,6 @@ import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 @Configuration
@@ -110,7 +106,7 @@ public class ClientController {
   }
 
   @RequestMapping(value = {"/"}, method = RequestMethod.GET)
-  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oidc", required = false) String modus)
+  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oauth2", required = false) String modus)
     throws IOException {
     ClientSettings settings = createDefaultSettings(modus);
     modelMap.addAttribute(SETTINGS, settings);
