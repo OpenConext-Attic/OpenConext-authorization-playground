@@ -8,6 +8,7 @@ import com.sun.jersey.api.client.PartialRequestBuilder;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.core.header.OutBoundHeaders;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.codec.binary.Base64;
@@ -17,9 +18,12 @@ import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +35,10 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @Configuration
@@ -54,6 +61,9 @@ public class ClientController {
 
   @Value("${oauth.resource_server_api_url}")
   private String resourceServerApiUrl;
+
+  @Value("${oauth.check_token_url}")
+  private String checkTokenUrl;
 
   @Value("${oauth.scopes}")
   private String scopes;
@@ -229,22 +239,35 @@ public class ClientController {
       .header(AUTHORIZATION, "bearer ".concat(accessToken))
       .type(MediaType.APPLICATION_JSON_TYPE)
       .accept(MediaType.APPLICATION_JSON_TYPE);
-    return doPerformCall(modelMap, settings, requestURL, builder);
+    return doPerformCall(modelMap, settings, requestURL, builder, HttpMethod.GET, null);
   }
 
-  private String doPerformCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL, Builder builder) throws IOException {
+  private String doPerformCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL,
+                               Builder builder, HttpMethod method, Object requestEntity) throws IOException {
     OutBoundHeaders headers = getHeadersCopy(builder);
     long start = System.currentTimeMillis();
-    ClientResponse clientResponse = builder.get(ClientResponse.class);
+    ClientResponse clientResponse;
+    if (method.equals(HttpMethod.GET)) {
+      clientResponse = builder.get(ClientResponse.class);
+    } else if (method.equals(HttpMethod.POST)) {
+      clientResponse = builder.post(ClientResponse.class, requestEntity);
+    } else {
+      throw new RuntimeException("Not supported method: "+method);
+    }
     String json = IOUtils.toString(clientResponse.getEntityInputStream());
     settings.setStep("step3");
     modelMap.put(SETTINGS, settings);
-    modelMap.put("requestInfo", "Method: GET".concat(BR).concat("URL: ").concat(requestURL).concat(BR)
+    modelMap.put("requestInfo", "Method: ".concat(method.name()).concat(BR).concat("URL: ").concat(requestURL).concat(BR)
       .concat("Headers: ").concat(headers.toString()));
     addResponseInfo(modelMap, clientResponse);
     modelMap.put("responseTime", String.format("Took %s ms", System.currentTimeMillis() - start));
     modelMap.put("rawResponseInfo", getRawResponseInfo(json));
     return "oauth-client";
+  }
+
+  private String doPerformGet(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL,
+                               Builder builder) throws IOException {
+    return doPerformCall(modelMap, settings, requestURL, builder, HttpMethod.GET, null);
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "userInfo")
@@ -261,7 +284,17 @@ public class ClientController {
     String requestURL = oidcIntrospectUrl + "?token=" + accessToken;
     Builder builder = getBasicAuthBuilder(settings, requestURL);
 
-    return doPerformCall(modelMap, settings, requestURL, builder);
+    return doPerformGet(modelMap, settings, requestURL, builder);
+  }
+
+  @RequestMapping(value = "/", method = RequestMethod.POST, params = "checkToken")
+  public String checkToken(ModelMap modelMap, @ModelAttribute("settings")
+  ClientSettings settings) throws IOException {
+    String accessToken = settings.getAccessToken();
+    Builder builder = getBasicAuthBuilder(settings, checkTokenUrl);
+    Form formData = new Form();
+    formData.put("token", Collections.singletonList(accessToken));
+    return doPerformCall(modelMap, settings, checkTokenUrl, builder, HttpMethod.POST, formData);
   }
 
   @RequestMapping(value = "/decodeJwtToken", method = RequestMethod.GET)

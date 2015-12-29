@@ -176,6 +176,11 @@
                   <a class="c-button-link" th:href="${settings.oidcWellKnownConfigurationUrl}" target="_blank">Configuration endpoint</a>
                   <input type="hidden" th:field="*{oidcWellKnownConfigurationUrl}"/>
                 </div>
+                <div th:if="${!settings.openIdConnect}" class="buttons">
+                  <div style="display: inline" th:if="${settings.accessTokenPresent}">
+                    <button name="checkToken" class="c-button-link">Check token endpoint</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
