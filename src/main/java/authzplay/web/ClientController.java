@@ -235,6 +235,8 @@ public class ClientController {
   }
 
   private String performResourceCall(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL, String accessToken) throws IOException {
+    //https://developer.salesforce.com/docs/atlas.en-us.198.0.api_rest.meta/api_rest/intro_curl.htm
+    accessToken = accessToken.replace("!", "\\!");
     Builder builder = client.resource(requestURL)
       .header(AUTHORIZATION, "bearer ".concat(accessToken))
       .type(MediaType.APPLICATION_JSON_TYPE)
