@@ -125,7 +125,7 @@ public class ClientController {
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "reset")
   public String reset(ModelMap modelMap) throws IOException {
-    return start(modelMap, "oidc");
+    return start(modelMap, "oauth2");
   }
 
 
