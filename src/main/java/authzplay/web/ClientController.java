@@ -220,10 +220,14 @@ public class ClientController {
     return "oauth-client";
   }
 
-  private String getRawResponseInfo(String json) throws IOException {
+  private String getRawResponseInfo(String json) {
     //looks silly but easiest way
-    JsonNode jsonNode = mapper.readTree(json);
-    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
+    try {
+      JsonNode jsonNode = mapper.readTree(json);
+      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
+    } catch (IOException e) {
+      return json;
+    }
   }
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "step3")
@@ -254,7 +258,7 @@ public class ClientController {
     } else if (method.equals(HttpMethod.POST)) {
       clientResponse = builder.post(ClientResponse.class, requestEntity);
     } else {
-      throw new RuntimeException("Not supported method: "+method);
+      throw new RuntimeException("Not supported method: " + method);
     }
     String json = IOUtils.toString(clientResponse.getEntityInputStream());
     settings.setStep("step3");
@@ -268,7 +272,7 @@ public class ClientController {
   }
 
   private String doPerformGet(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings, String requestURL,
-                               Builder builder) throws IOException {
+                              Builder builder) throws IOException {
     return doPerformCall(modelMap, settings, requestURL, builder, HttpMethod.GET, null);
   }
 
