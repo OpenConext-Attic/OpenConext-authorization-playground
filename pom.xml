@@ -5,7 +5,7 @@
 
   <groupId>org.openconext</groupId>
   <artifactId>authz-playground</artifactId>
-  <version>1.5</version>
+  <version>1.6-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>OpenConext oauth2 playground</name>
@@ -105,8 +105,8 @@
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
+        <artifactId>wagon-webdav-jackrabbit</artifactId>
+        <version>2.10</version>
       </extension>
     </extensions>
   </build>

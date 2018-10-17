@@ -116,7 +116,7 @@ public class ClientController {
   }
 
   @RequestMapping(value = {"/"}, method = RequestMethod.GET)
-  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oauth2", required = false) String modus)
+  public String start(ModelMap modelMap, @RequestParam(value = "modus", defaultValue = "oidc", required = false) String modus)
     throws IOException {
     ClientSettings settings = createDefaultSettings(modus);
     modelMap.addAttribute(SETTINGS, settings);
@@ -125,7 +125,7 @@ public class ClientController {
 
   @RequestMapping(value = "/", method = RequestMethod.POST, params = "reset")
   public String reset(ModelMap modelMap) throws IOException {
-    return start(modelMap, "oauth2");
+    return start(modelMap, "oidc");
   }
 
 
