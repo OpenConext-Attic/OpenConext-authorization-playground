@@ -108,17 +108,15 @@
 
                 <section data-show-implicit="false">
                   <label for="accessTokenEndPoint">AccessToken URL</label>
+                  <p class="help-block">The access token endpoint of the OpenID Provider</p>
                   <input id="accessTokenEndPoint" type="text" class="input-xlarge"
                          th:field="*{accessTokenEndPoint}"/>
-
-                  <p class="help-block">The access token endpoint of the OpenID Provider</p>
                 </section>
 
                 <section data-show-client-credentials="false">
                   <label for="authorizationURL">Authorization URL</label>
-                  <input id="authorizationURL" type="text" class="input-xlarge" th:field="*{authorizationURL}"/>
-
                   <p class="help-block">The authorization endpoint of the OpenID Provider</p>
+                  <input id="authorizationURL" type="text" class="input-xlarge" th:field="*{authorizationURL}"/>
                 </section>
 
                 <div class="buttons">

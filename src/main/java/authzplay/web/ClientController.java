@@ -188,8 +188,13 @@ public class ClientController {
         ClientSettings settings = (ClientSettings) request.getSession().getAttribute(SETTINGS);
         String responseType = settings.getResponseType();
         if (settings.getGrantType().equals("implicit")) {
+            Map<String, String[]> parameterMap = request.getParameterMap();
+            modelMap.put(
+                    "requestInfo",
+                    "Method: ".concat(request.getMethod()).concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
+                            .concat("Headers: ").concat(headersFromRequest(request)).concat(BR).concat("Body: ")
+                            .concat(new HashMap<>(parameterMap).entrySet().stream().map(e -> e.getKey()+"="+e.getValue()[0]).collect(Collectors.joining())));
             if ("form_post".equals(settings.getResponseMode())) {
-                Map<String, String[]> parameterMap = request.getParameterMap();
                 if (parameterMap.containsKey("access_token")) {
                     String accessToken = parameterMap.get("access_token")[0];
                     settings.setAccessToken(accessToken);
@@ -206,11 +211,6 @@ public class ClientController {
                                 .concat(response.getHeaderNames().stream().map(name -> response.getHeader(name)).collect(Collectors.joining()))));
                 String json = mapper.writeValueAsString(parameterMap);
                 modelMap.put("rawResponseInfo", getRawResponseInfo(json));
-                modelMap.put(
-                        "requestInfo",
-                        "Method: POST".concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
-                                .concat("Headers: ").concat(headersFromRequest(request)).concat(BR).concat("Body: ")
-                                .concat(new HashMap<>(parameterMap).entrySet().stream().map(e -> e.getKey()+"="+e.getValue()[0]).collect(Collectors.joining())));
             } else {
                 modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
                 if (settings.isOpenIdConnect()) {
