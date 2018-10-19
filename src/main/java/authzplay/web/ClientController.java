@@ -193,7 +193,7 @@ public class ClientController {
                     "requestInfo",
                     "Method: ".concat(request.getMethod()).concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
                             .concat("Headers: ").concat(headersFromRequest(request)).concat(BR).concat("Body: ")
-                            .concat(new HashMap<>(parameterMap).entrySet().stream().map(e -> e.getKey()+"="+e.getValue()[0]).collect(Collectors.joining())));
+                            .concat(new HashMap<>(parameterMap).entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()[0]).collect(Collectors.joining())));
             if ("form_post".equals(settings.getResponseMode())) {
                 if (parameterMap.containsKey("access_token")) {
                     String accessToken = parameterMap.get("access_token")[0];
