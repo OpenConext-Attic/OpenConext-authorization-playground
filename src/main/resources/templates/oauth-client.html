@@ -8,8 +8,7 @@
 <body>
 <div layout:fragment="content">
 
-  <p th:if="!${settings.openIdConnect}">Click <a href="/?modus=oidc" th:href="@{/?modus=oidc}">here</a> for OpenID Connect defaults.</p>
-  <p th:if="${settings.openIdConnect}">Click <a href="/?modus=oauth2" th:href="@{/?modus=oauth2}">here</a> for OAuth2 defaults.</p>
+  <p>Click <a href="/?modus=oidc" th:href="@{/?modus=oidc}">here</a> for OpenID Connect defaults.</p>
 
   <div class="row">
     <form class="col-md-6" name="test-oauth-server" action="/" th:object="${settings}" method="post">
@@ -27,66 +26,55 @@
             <div class="panel-body">
               <div class="fields">
                 <label for="oauthKey">OAuth Client Id</label>
-                <input id="oauthKey" type="text" class="input-xlarge" th:field="*{oauthKey}"/>
-
                 <p class="help-block">The client must have obtained the key out-of-band during the registration
                   process</p>
+                <input id="oauthKey" type="text" class="input-xlarge" th:field="*{oauthKey}"/>
+
                 <section data-show-implicit="false">
                   <label for="oauthSecret">OAuth secret</label>
-                  <input id="oauthSecret" type="text" class="input-xlarge" th:field="*{oauthSecret}"/>
-
-                  <p class="help-block">The secret (normally a UUID) is also obtained out-of-band by the client
+                  <p class="help-block">The secret is also obtained out-of-band by the client
                     during the registration process</p>
+                  <input id="oauthSecret" type="text" class="input-xlarge" th:field="*{oauthSecret}"/>
                 </section>
 
                 <label for="oauthScopes">OAuth scopes (space-separated, case-sensitive)</label>
+                <p class="help-block">The scope for which to grant access</p>
                 <input id="oauthScopes" type="text" class="input-xlarge" th:field="*{oauthScopes}"/>
 
-                <p class="help-block">The scope for which to grant access</p>
 
                 <label>OAuth grant type</label>
-                <input id="authCode" th:field="*{grantType}" type="radio" value="authCode"/><label for="authCode" class="radio-label">Authorization code</label>
-                <input id="implicitGrant" th:field="*{grantType}" type="radio" value="implicit"/><label for="implicitGrant" class="radio-label">Implicit</label>
-                <input id="clientCredentials" th:field="*{grantType}" type="radio" value="clientCredentials"/><label for="clientCredentials" class="radio-label">Client Credentials</label>
-
                 <p class="help-block">A credential representing the resource
                   owner's authorization (to access its protected resources) used by the
                   client to obtain an access token</p>
-
-                <input id="isOidc" type="hidden" class="input-xlarge" th:field="*{openIdConnect}"/>
-                <section th:if="${settings.openIdConnect}" data-show-auth-code="true">
-                  <label for="noRedirectUri">Response type</label>
-
-                  <input id="code" th:field="*{responseType}" type="radio" value="code"/>
-                  <label for="code" class="radio-label">Code response</label>
-
-                  <input id="idToken" th:field="*{responseType}" type="radio" value="id_token"/>
-                  <label for="idToken" class="radio-label">ID Token response</label>
-
-                  <p class="help-block">The Response Type request parameter response_type informs the Authorization Server of the desired authorization processing flow,
-                    including what parameters are returned from the endpoints used.</p>
-                </section>
+                <input id="authCode" th:field="*{grantType}" type="radio" value="authCode"/>
+                <label for="authCode" class="radio-label">Authorization code</label>
+                <input id="implicitGrant" th:field="*{grantType}" type="radio" value="implicit"/><label
+                for="implicitGrant" class="radio-label">Implicit</label>
+                <input id="clientCredentials" th:field="*{grantType}" type="radio" value="clientCredentials"/><label
+                for="clientCredentials" class="radio-label">Client Credentials</label>
+                <p/>
 
                 <section data-show-client-credentials="false">
                   <label for="noRedirectUri">Use no redirect URI</label>
                   <input id="noRedirectUri" th:field="*{noRedirectUri}" type="checkbox"/>
-
-                  <p class="help-block">Check the above to ensure we don't use the playground redirect-uri. Then after the authorization code is granted you will be redirected
-                    to the pre-configured redirect for this client. This of course depends on which authorization server you are using.</p>
+                  <p class="help-block">If checked we don't use the playground redirect-uri. After
+                    the authorization code is granted you will be redirected
+                    to the pre-configured redirect for this client. This of course depends on which authorization server
+                    you are using.</p>
                 </section>
 
                 <section data-show-implicit="false">
                   <label for="accessTokenEndPoint">AccessToken URL</label>
+                  <p class="help-block">The access token endpoint of the Authorization server</p>
                   <input id="accessTokenEndPoint" type="text" class="input-xlarge"
                          th:field="*{accessTokenEndPoint}"/>
 
-                  <p class="help-block">The access token endpoint of the Authorization server</p>
                 </section>
                 <section data-show-client-credentials="false">
                   <label for="authorizationURL">Authorization URL</label>
+                  <p class="help-block">The authorization endpoint of the Authorization server</p>
                   <input id="authorizationURL" type="text" class="input-xlarge" th:field="*{authorizationURL}"/>
 
-                  <p class="help-block">The authorization endpoint of the Authorization server</p>
                 </section>
                 <div class="buttons">
                   <button name="step1" class="c-button">Next</button>
@@ -110,12 +98,9 @@
             <div class="panel-body">
               <div class="fields">
                 <label for="authorizationURLComplete">Authorization URL</label>
-                <textarea rows="5" class="input-xlarge" id="authorizationURLComplete" cols="50"
+                <p class="help-block">The URL to redirect to for user authentication</p>
+                <textarea rows="5" class="input-xxxlarge" id="authorizationURLComplete" cols="100"
                           th:field="*{authorizationURLComplete}"/>
-
-                <p class="help-block">The URL to redirect to for user authentication
-                </p>
-
                 <div class="buttons">
                   <button name="step2" class="c-button">Next</button>
                   <button name="reset" class="c-button">Reset</button>
@@ -124,15 +109,13 @@
             </div>
           </div>
         </div>
-
         <div class="panel panel-default">
           <div class="panel-heading" role="tab" id="step3heading">
             <h4 class="panel-title">
               <a data-toggle="collapse" data-parent="#mainOptions" href="#step3" aria-expanded="false"
                  aria-controls="step3">
                 <span class="badge">3</span>
-                  <span th:if="!${settings.openIdConnect}" class="badge-label">OAuth Requests</span>
-                  <span th:if="${settings.openIdConnect}" class="badge-label">OpenID Connect Requests</span>
+                <span class="badge-label">OAuth Requests</span>
               </a>
             </h4>
           </div>
@@ -141,57 +124,26 @@
               <div class="fields">
                 <div th:if="${settings.accessTokenPresent}">
                   <label for="accessToken">Access token</label>
+                  <p class="help-block">The access token for all subsequent OAuth queries</p>
                   <input id="accessToken" type="text" th:field="*{accessToken}" class="input-xlarge" readonly="true"/>
                 </div>
-                <div th:if="${settings.openIdConnect and settings.accessTokenPresent}">
-                  <input id="accessTokenJsonPrintInput" type="hidden" th:field="*{accessTokenJson}"/>
-                  <pre id="accessTokenJsonPrint" class="prettyprint pre-scrollable pre-json" th:text="${settings.accessTokenJson}">accessTokenJson </pre>
-                </div>
-                <div th:if="${settings.accessTokenPresent}">
-                  <p class="help-block">The accessToken for all subsequent OAuth queries</p>
-                </div>
-                <div th:if="${settings.idTokenPresent}">
-                  <label for="oidcIdToken">ID token</label>
-                  <input id="oidcIdToken" type="text" th:field="*{idToken}" class="input-xlarge" readonly="true"/>
-                  <input id="idTokenJsonPrintInput" type="hidden" th:field="*{idTokenJson}"/>
-                  <pre id="idTokenJsonPrint" class="prettyprint pre-scrollable pre-json" th:text="${settings.idTokenJson}">idTokenJson </pre>
-                  <p class="help-block">The ID Token we have received</p>
-                </div>
                 <label for="requestURL">API Request </label>
+                <p class="help-block">An endpoint on a Resource Server</p>
                 <input id="requestURL" type="text" th:field="*{requestURL}" class="input-xlarge"/>
-
-                <p class="help-block">An endpoint on a Resource server</p>
-
                 <div class="buttons">
                   <button name="step3" class="c-button">Fetch</button>
                   <button name="reset" class="c-button">Reset</button>
                 </div>
-                <div th:if="${settings.openIdConnect}" class="buttons">
-                  <div style="display: inline" th:if="${settings.accessTokenPresent}">
-                    <button name="introspect" class="c-button-link">Introspect endpoint</button>
-                    <button name="userInfo" class="c-button-link">UserInfo endpoint</button>
-                  </div>
-                  <a class="c-button-link" th:href="${settings.oidcJwkUrl}" target="_blank">JWK endpoint</a>
-                  <input type="hidden" th:field="*{oidcJwkUrl}"/>
-                  <a class="c-button-link" th:href="${settings.oidcWellKnownConfigurationUrl}" target="_blank">Configuration endpoint</a>
-                  <input type="hidden" th:field="*{oidcWellKnownConfigurationUrl}"/>
-                </div>
-                <div th:if="${!settings.openIdConnect}" class="buttons">
-                  <div style="display: inline" th:if="${settings.accessTokenPresent}">
-                    <button name="checkToken" class="c-button-link">Check token endpoint</button>
-                  </div>
+                <div class="buttons">
+                  <button th:if="${settings.accessTokenPresent}" name="checkToken" class="c-button-link">Check token endpoint</button>
                 </div>
               </div>
             </div>
           </div>
-
-
         </div>
-
       </div>
       <input id="step" type="hidden" th:value="${settings.step}" name="step"/>
       <input id="parseAnchorForAccessToken" type="hidden" th:value="${parseAnchorForAccessToken}"/>
-      <input id="parseAnchorForIdToken" type="hidden" th:value="${parseAnchorForIdToken}"/>
       <input id="openIdConnect" type="hidden" th:value="${settings.openIdConnect}"/>
     </form>
     <div class="col-md-6">
@@ -201,14 +153,14 @@
       </div>
       <div id="response">
         <div class="alert alert-info alert-http">HTTP Response Headers</div>
-          <pre id="responseInfo" class="prettyprint pre-scrollable pre-json"
-               th:text="${responseInfo}">responseInfo</pre>
+        <pre id="responseInfo" class="prettyprint pre-scrollable pre-json"
+             th:text="${responseInfo}">responseInfo</pre>
       </div>
       <div id="raw-response">
         <div class="alert alert-info alert-http">HTTP Response Body</div>
-          <p th:text="${responseTime}"></p>
-          <pre id="rawResponseInfo" class="prettyprint pre-scrollable pre-json"
-               th:text="${rawResponseInfo}">responseInfo</pre>
+        <p th:text="${responseTime}"></p>
+        <pre id="rawResponseInfo" class="prettyprint pre-scrollable pre-json"
+             th:text="${rawResponseInfo}">responseInfo</pre>
       </div>
     </div>
   </div>

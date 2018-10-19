@@ -39,6 +39,7 @@ public class ClientSettings {
   private String accessToken;
   private String idToken;
   private String responseType;
+  private String responseMode = "query";
   private boolean openIdConnect;
 
   private String oidcIntrospectUrl;
@@ -222,6 +223,14 @@ public class ClientSettings {
 
   public void setResponseType(String responseType) {
     this.responseType = responseType;
+  }
+
+  public String getResponseMode() {
+    return responseMode;
+  }
+
+  public void setResponseMode(String responseMode) {
+    this.responseMode = responseMode;
   }
 
   public boolean isOpenIdConnect() {

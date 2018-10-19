@@ -9,7 +9,7 @@ form input[type=text] {
   height: 30px;
 }
 
-input.input-xlarge {
+input.input-xlarge, textarea.input-xxxlarge {
   width: 100%;
 }
 

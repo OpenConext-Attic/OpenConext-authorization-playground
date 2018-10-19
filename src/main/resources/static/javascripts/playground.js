@@ -5,11 +5,19 @@ $(function () {
     $('#' + $('input#step').val()).collapse('show');
   });
 
+  $('[data-show-auth-code="false"]').hide();
+
   // changing the grant type means toggling some fields:
   $("input[name='grantType']").click(function () {
     $('[data-show-client-credentials]').toggle(this.id !== 'clientCredentials');
     $('[data-show-implicit]').toggle(this.id !== 'implicitGrant');
-    $('[data-show-auth-code]').toggle(this.id === 'authCode');
+    $('[data-show-auth-code]').toggle(this.id !== 'authCode');
+
+    var responseTypeSelector = this.id === 'implicitGrant' ? "idTokenToken" : "code";
+    $('#' + responseTypeSelector).prop("checked", true);
+
+    var responseModeSelector = this.id === 'implicitGrant' ? "fragment" : "query";
+    $('#' + responseModeSelector).prop("checked", true);
   });
 
 
