@@ -190,7 +190,7 @@
                   <p class="help-block">An endpoint on a Resource server.</p>
                 </div>
                 <div th:if="!${settings.accessTokenPresent}">
-                  <p class="help-block">Without access token API request can not be made.</p>
+                  <p style="color: darkred;" class="help-block">Without access token API requests can not be made.</p>
                 </div>
                 <div class="buttons">
                   <button th:if="${settings.accessTokenPresent}" name="step3" class="c-button">Fetch</button>
