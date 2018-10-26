@@ -124,8 +124,8 @@ public class ClientController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST, params = "reset")
-    public String reset(ModelMap modelMap) throws IOException {
-        return start(modelMap, "oidc");
+    public String reset(ModelMap modelMap, @ModelAttribute("settings") ClientSettings settings) throws IOException {
+        return start(modelMap, settings.isOpenIdConnect() ? "oidc" : "oauth2");
     }
 
 
@@ -177,7 +177,7 @@ public class ClientController {
         while (headerNames.hasMoreElements()) {
             String s = headerNames.nextElement();
             String header = request.getHeader(s);
-            builder.append(s + ":" + header);
+            builder.append(s + ":" + header + BR + "\t");
         }
         return builder.toString();
     }
@@ -192,8 +192,9 @@ public class ClientController {
             modelMap.put(
                     "requestInfo",
                     "Method: ".concat(request.getMethod()).concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
-                            .concat("Headers: ").concat(headersFromRequest(request)).concat(BR).concat("Body: ")
-                            .concat(new HashMap<>(parameterMap).entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()[0]).collect(Collectors.joining())));
+                            .concat("Headers: ").concat(BR + "\t").concat(headersFromRequest(request)).concat(BR)
+                            .concat("Body: ").concat(BR + "\t"));
+
             if ("form_post".equals(settings.getResponseMode())) {
                 if (parameterMap.containsKey("access_token")) {
                     String accessToken = parameterMap.get("access_token")[0];
@@ -207,8 +208,8 @@ public class ClientController {
                 }
                 modelMap.put(
                         "responseInfo",
-                        "Status: ".concat(String.valueOf(response.getStatus()).concat(BR).concat("Headers:")
-                                .concat(response.getHeaderNames().stream().map(name -> response.getHeader(name)).collect(Collectors.joining()))));
+                        "Status: ".concat(String.valueOf(response.getStatus()).concat(BR).concat("Headers:").concat(BR + "\t")
+                                .concat(response.getHeaderNames().stream().map(name -> response.getHeader(name)).collect(Collectors.joining(BR + "\t")))));
                 String json = mapper.writeValueAsString(parameterMap);
                 modelMap.put("rawResponseInfo", getRawResponseInfo(json));
             } else {
@@ -239,7 +240,10 @@ public class ClientController {
             modelMap.put(
                     "requestInfo",
                     "Method: POST".concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
-                            .concat("Headers: ").concat(headers.toString()).concat(BR).concat("Body: ").concat(formData.toString()));
+                            .concat("Headers: ").concat(BR + "\t").concat(headers.entrySet().stream().map(e -> e.getKey() + ": " + String.join(",", e.getValue().stream().map(o -> o.toString()).collect(Collectors.toList())))
+                            .collect(Collectors.joining(BR + "\t"))).concat(BR)
+                            .concat("Body: ").concat(BR + "\t").concat(formData.entrySet().stream().map(e -> e.getKey() + ": " + String.join(",", e.getValue().stream().map(o -> o.toString()).collect(Collectors.toList())))
+                            .collect(Collectors.joining(BR + "\t"))));
             if (clientResponse.getStatus() == 200) {
                 HashMap map = mapper.readValue(json, HashMap.class);
                 settings.setAccessToken((String) map.get("access_token"));
@@ -301,7 +305,8 @@ public class ClientController {
         settings.setStep("step3");
         modelMap.put(SETTINGS, settings);
         modelMap.put("requestInfo", "Method: ".concat(method.name()).concat(BR).concat("URL: ").concat(requestURL).concat(BR)
-                .concat("Headers: ").concat(headers.toString()));
+                .concat("Headers: ").concat(BR + "\t")
+                .concat(headers.entrySet().stream().map(e -> e.getKey() + ": " + String.join(",", e.getValue().stream().map(o -> o.toString()).collect(Collectors.toList()))).collect(Collectors.joining(BR + "\t"))));
         addResponseInfo(modelMap, clientResponse);
         modelMap.put("responseTime", String.format("Took %s ms", System.currentTimeMillis() - start));
         modelMap.put("rawResponseInfo", getRawResponseInfo(json));
@@ -356,8 +361,8 @@ public class ClientController {
     private void addResponseInfo(ModelMap modelMap, ClientResponse clientResponse) {
         modelMap.put(
                 "responseInfo",
-                "Status: ".concat(String.valueOf(clientResponse.getStatus()).concat(BR).concat("Headers:")
-                        .concat(clientResponse.getHeaders().toString())));
+                "Status: ".concat(String.valueOf(clientResponse.getStatus()).concat(BR).concat("Headers:").concat(BR + "\t")
+                        .concat(clientResponse.getHeaders().entrySet().stream().map(e -> e.getKey() + ": " + String.join(", ", e.getValue())).collect(Collectors.joining(BR + "\t")))));
     }
 
     /*
