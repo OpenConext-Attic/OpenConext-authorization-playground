@@ -48,7 +48,6 @@ $(function () {
                 $('#accessTokenJsonPrintInput').val(jqxhrAt.responseText)
             });
         }
-
     }
 
     // we are in step 3 of id_token
