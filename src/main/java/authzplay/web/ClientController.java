@@ -189,13 +189,12 @@ public class ClientController {
         String responseType = settings.getResponseType();
         if (settings.getGrantType().equals("implicit")) {
             Map<String, String[]> parameterMap = request.getParameterMap();
-            modelMap.put(
-                    "requestInfo",
-                    "Method: ".concat(request.getMethod()).concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
-                            .concat("Headers: ").concat(BR + "\t").concat(headersFromRequest(request)).concat(BR)
-                            .concat("Body: ").concat(BR + "\t"));
-
+            String requestInfo = "Method: ".concat(request.getMethod()).concat(BR).concat("URL: ").concat(settings.getAccessTokenEndPoint()).concat(BR)
+                    .concat("Headers: ").concat(BR + "\t").concat(headersFromRequest(request)).concat(BR);
             if ("form_post".equals(settings.getResponseMode())) {
+                String body = parameterMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()[0]).collect(Collectors.joining(BR + "\t"));
+                requestInfo = requestInfo.concat("Form parameters: ").concat(BR + "\t")
+                        .concat(body);
                 if (parameterMap.containsKey("access_token")) {
                     String accessToken = parameterMap.get("access_token")[0];
                     settings.setAccessToken(accessToken);
@@ -213,11 +212,13 @@ public class ClientController {
                 String json = mapper.writeValueAsString(parameterMap);
                 modelMap.put("rawResponseInfo", getRawResponseInfo(json));
             } else {
+                requestInfo = requestInfo.concat("Body: ").concat(BR + "\t");
                 modelMap.addAttribute("parseAnchorForAccessToken", Boolean.TRUE);
                 if (settings.isOpenIdConnect()) {
                     modelMap.addAttribute("parseAnchorForIdToken", Boolean.TRUE);
                 }
             }
+            modelMap.put("requestInfo", requestInfo);
         } else if (StringUtils.hasText(responseType) && responseType.equals("id_token")) {
             modelMap.addAttribute("parseAnchorForIdToken", Boolean.TRUE);
         } else {
